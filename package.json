@@ -1,0 +1,31 @@
+{
+  "name": "oto-auth-service",
+  "version": "1.0.0",
+  "description": "otomatelogiclabs auth services",
+  "main": "production-app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "ncc build production-app.js -o dist",
+    "start": "node production-app.js"
+  },
+  "author": "lentera technologies pvt ltd..",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.461.0",
+    "aws-sdk": "^2.1484.0",
+    "cors": "^2.8.5",
+    "date-fns": "^2.30.0",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.0",
+    "mysql": "^2.18.1",
+    "mysql2": "^3.6.5",
+    "password-hash": "^1.2.2",
+    "uuid": "^9.0.0",
+    "winston": "^3.8.2",
+    "winston-daily-rotate-file": "^4.7.1"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.36.1"
+  }
+}
