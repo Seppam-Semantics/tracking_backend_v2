@@ -7,19 +7,6 @@ const client = require('../utils/client');
 app.set('superSecret', config.secret);
 
 
-
-//  show case to madan
-
-// async function generateQuery(data) {
-//     return new Promise((resolve, reject) => {
-//         if (data) {
-//             const formattedData = data.slice(0, -1);
-//             resolve(`${formattedData};`);
-//         } else {
-//             resolve('');
-//         }
-//     });
-// }
 async function generateQuery(id, data, query) {
     return new Promise((resolve, reject) => {
         if (data) {
@@ -167,4 +154,5 @@ router.delete('/roles/:id', (req, res, next) => {
         next(err)
     }
 });
+
 module.exports = router;
