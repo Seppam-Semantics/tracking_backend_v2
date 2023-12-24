@@ -3,7 +3,7 @@ const path = require('path');
 const router = express.Router();
 var db;
 var mysql = require('mysql2');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '/BackEnd/.env') });
 
 var connection = mysql.createPool({
   // host: process.env.DB_HOST,
@@ -15,7 +15,7 @@ var connection = mysql.createPool({
   host:'localhost',
   user: 'root',
   password: '#Abishek001',
-  database: 'barcode'
+  database: 'barcode_24122023'
   
 });
 

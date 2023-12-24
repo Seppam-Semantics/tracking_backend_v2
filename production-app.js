@@ -6,7 +6,7 @@ const https = require('https');
 const bodyParser = require('body-parser');
 const config = require('./server/config/config')
 app.set('superSecret', config.secret);
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const winston = require('winston');
 const DailyRotateFile = require('winston-daily-rotate-file');
@@ -88,7 +88,7 @@ const profileapi = require('./server/routes/profileapi');
 
 const employeeapi = require('./server/routes/employeeapi');
 
-// const api = require('./server/routes/api');
+const workorderapi = require('./server/routes/workorderapi');
 
 
 app.use(bodyParser.json({ limit: '500mb' }));
@@ -106,6 +106,8 @@ app.use('/profileapi',JWTauthorization,profileapi);
 
 app.use('/employeeapi', JWTauthorization, employeeapi);
 
+app.use('/workorderapi', JWTauthorization, workorderapi);
+
 // app.use('/api',JWTauthorization,api);
 
 // app.get('*', (req, res) => {
@@ -114,8 +116,6 @@ app.use('/employeeapi', JWTauthorization, employeeapi);
 
 const port = process.env.PORT;
 app.set('port', port);
-
-
 
 if (process.env.PRODUCTION == 'false') {
     const server = http.createServer(app);
