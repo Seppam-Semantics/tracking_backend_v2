@@ -90,6 +90,8 @@ const employeeapi = require('./server/routes/employeeapi');
 
 const workorderapi = require('./server/routes/workorderapi');
 
+const fabricrollapi = require('./server/routes/fabricrollapi');
+
 
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
@@ -108,6 +110,7 @@ app.use('/employeeapi', JWTauthorization, employeeapi);
 
 app.use('/workorderapi', JWTauthorization, workorderapi);
 
+app.use('/fabricrollapi', JWTauthorization, fabricrollapi);
 // app.use('/api',JWTauthorization,api);
 
 // app.get('*', (req, res) => {

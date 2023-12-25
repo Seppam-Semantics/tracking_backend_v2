@@ -15,7 +15,7 @@ var connection = mysql.createPool({
   host:'localhost',
   user: 'root',
   password: '#Abishek001',
-  database: 'barcode_24122023'
+  database: 'barcode_25122023'
   
 });
 
