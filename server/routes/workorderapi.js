@@ -6,20 +6,10 @@ const db = require('../config/database');
 const client = require('../utils/client');
 const hash = require('password-hash');
 app.set('superSecret', config.secret);
-const { format } = require('date-fns');
+ 
 
 
-async function generateDate(data) {
-    return new Promise((resolve, reject) => {
-        if (data) {
-            const now = new Date(data);
-            const formattedDate = format(now, 'yyyy-MM-dd');
-            resolve(formattedDate);
-        } else {
-            resolve();
-        }
-    });
-}
+
 async function generateQuery(id, data, query) {
     return new Promise((resolve, reject) => {
         if (data) {
@@ -73,6 +63,11 @@ router.get('/workorder', (req, res, next) => {
         next(err)
     }
 });
+
+
+
+
+
 router.get('/workorder/:id', (req, res, next) => {
     try {
         var id = req.params.id;
@@ -113,7 +108,6 @@ router.post('/workorder', async (req, res, next) => {
 
         var data = req.body;
         var i = 0;
-        data
         for (let datalist of data) {
 
             var id = datalist.id ? datalist.id : 0;
@@ -196,4 +190,65 @@ router.delete('/workorder/:id', (req, res, next) => {
         next(err)
     }
 });
+
+router.get('/workorders-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select id,buyer,orderNo,style,color,size,fabType, fabDia, fabGsm, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, isPrint, printCount from workorder 
+                 where orgId = ${orgId}  and status = 1 and delStatus = 0`
+
+        if (id > 0) {
+            Query = Query + ` and id IN (${id})`
+        } else {
+
+
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and size IN ('${size}')`
+            }
+        }
+        console.log(Query);-
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
 module.exports = router;

@@ -92,6 +92,7 @@ const workorderapi = require('./server/routes/workorderapi');
 
 const fabricrollapi = require('./server/routes/fabricrollapi');
 
+const filtersapi = require('./server/routes/filtersapi');
 
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
@@ -111,6 +112,9 @@ app.use('/employeeapi', JWTauthorization, employeeapi);
 app.use('/workorderapi', JWTauthorization, workorderapi);
 
 app.use('/fabricrollapi', JWTauthorization, fabricrollapi);
+
+app.use('/filtersapi', JWTauthorization, filtersapi);
+
 // app.use('/api',JWTauthorization,api);
 
 // app.get('*', (req, res) => {
