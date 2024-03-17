@@ -6,20 +6,20 @@ const db = require('../config/database');
 const client = require('../utils/client');
 const hash = require('password-hash');
 app.set('superSecret', config.secret);
-const { format } = require('date-fns');
+// const { format } = require('date-fns');
 
 
-async function generateDate(data) {
-    return new Promise((resolve, reject) => {
-        if (data) {
-            const now = new Date(data);
-            const formattedDate = format(now, 'yyyy-MM-dd');
-            resolve(formattedDate);
-        } else {
-            resolve();
-        }
-    });
-}
+// async function generateDate(data) {
+//     return new Promise((resolve, reject) => {
+//         if (data) {
+//             const now = new Date(data);
+//             const formattedDate = format(now, 'yyyy-MM-dd');
+//             resolve(formattedDate);
+//         } else {
+//             resolve();
+//         }
+//     });
+// }
 async function generateQuery(id, data, query) {
     return new Promise((resolve, reject) => {
         if (data) {
@@ -77,7 +77,7 @@ router.get('/employee/:id', (req, res, next) => {
     try {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
-        client.executeStoredProcedure('pview_employee(?,?)', [orgId, id],
+        client.executeStoredProcedure('pview_employee(?,?)', [id, orgId],
             req, res, next, async function (result) {
                 try {
                     rows = result;
@@ -166,4 +166,37 @@ router.delete('/employee/:id', (req, res, next) => {
         next(err)
     }
 });
+
+router.get('fabricentrys', (req, res, next) => {
+    try {
+        var workorder = req.query.workorder;
+        var entry = req.query.entry;
+        console.log(req.query);
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pview_fabricroll(?,?)', [id, orgId],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', employee: [] });
+                    }
+                    else {
+                        const basicData = rows.RowDataPacket[0][0];
+                        res.send({
+                            success: true,
+                            // employee: basicData
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
 module.exports = router;

@@ -19,14 +19,15 @@ router.get('/profile', (req, res, next) => {
                     }
                     else {
                         rows.RowDataPacket[0].forEach(data => {
-                            data.masters = data.masters;
-                            data.workOrders = data.workOrders;
-                            data.fabricRolls = data.fabricRolls;
-                            data.garmentBundles = data.garmentBundles;
-                            data.rollsEntry = data.rollsEntry;
-                            data.bundlesEntry = data.bundlesEntry;
-                            data.reports = data.reports;
-                            data.dashboards = data.dashboards;
+
+                            data.masters = JSON.parse(data.masters);
+                            data.workOrders = JSON.parse(data.workOrders);
+                            data.fabricRolls = JSON.parse(data.fabricRolls);
+                            data.garmentBundles = JSON.parse(data.garmentBundles);
+                            data.rollsEntry = JSON.parse(data.rollsEntry);
+                            data.bundlesEntry = JSON.parse(data.bundlesEntry);
+                            data.reports = JSON.parse(data.reports);
+                            data.dashboards = JSON.parse(data.dashboards);
                         });
                         res.send({ success: true, profiles: rows.RowDataPacket[0] })
 
@@ -45,7 +46,7 @@ router.get('/profile', (req, res, next) => {
 router.get('/profile/:id', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        let pid = req.params.id
+        var pid = req.params.id
 
         client.executeStoredProcedure('pgetall_profile_id(?, ?)', [orgId, pid],
             req, res, next, function (result) {
@@ -78,6 +79,7 @@ router.get('/profile/:id', (req, res, next) => {
         next(err)
     }
 });
+
 
 router.post('/profile', (req, res, next) => {
     try {

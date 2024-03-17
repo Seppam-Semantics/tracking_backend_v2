@@ -7,6 +7,19 @@ const client = require('../utils/client');
 app.set('superSecret', config.secret);
 
 
+
+//  show case to madan
+
+// async function generateQuery(data) {
+//     return new Promise((resolve, reject) => {
+//         if (data) {
+//             const formattedData = data.slice(0, -1);
+//             resolve(`${formattedData};`);
+//         } else {
+//             resolve('');
+//         }
+//     });
+// }
 async function generateQuery(id, data, query) {
     return new Promise((resolve, reject) => {
         if (data) {
@@ -28,7 +41,7 @@ async function generateQuery(id, data, query) {
 async function generateArray(data) {
     return new Promise((resolve, reject) => {
         if (data) {
-            resolve(data);
+            resolve(JSON.parse(data));
         } else {
             resolve([]);
         }
@@ -48,7 +61,7 @@ router.get('/roles', (req, res, next) => {
                     }
                     else {
                         rows.RowDataPacket[0].forEach(data => {
-                            data.profiles = data.profiles;
+                            data.profiles = JSON.parse(data.profiles);
                         });
                         res.send({ success: true, roles: rows.RowDataPacket[0] })
                     }
@@ -66,7 +79,7 @@ router.get('/roles/:id', (req, res, next) => {
     try {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
-        client.executeStoredProcedure('pview_role(?,?)', [orgId, id],
+        client.executeStoredProcedure('pview_role(?,?)', [id, orgId],
             req, res, next, async function (result) {
                 try {
                     rows = result;
@@ -75,7 +88,7 @@ router.get('/roles/:id', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', role: [] });
                     }
                     else {
-                        const profiles = await generateArray(rows.RowDataPacket[0][0]);
+                        const profiles = await generateArray(rows.RowDataPacket[0][0].profiles);
 
                         res.send({
                             success: true, role: {
@@ -154,5 +167,4 @@ router.delete('/roles/:id', (req, res, next) => {
         next(err)
     }
 });
-
 module.exports = router;

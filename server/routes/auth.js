@@ -16,7 +16,7 @@ router.post('/authentication', function (req, res, next) {
     var userName = req.body.userName;
     var password = req.body.password;
     var hashedPassword = hash.generate(password);
-    // console.log(hashedPassword);
+    console.log(hashedPassword);
     client.executeStoredProcedure('pauthenticateUser(?)', [userName], req, res, next, async function (result) {
         if (!result.RowDataPacket) {
             res.json({ success: false, error: 'username not exsists', data: [] });

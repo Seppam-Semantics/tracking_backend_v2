@@ -50,7 +50,7 @@ function logError(error) {
 
 
 function JWTauthorization(req, res, next) {
-    var token = req.body.token || req.params.token || req.headers['x-access-token'];
+    var token = req.body.token || req.param('token') || req.headers['x-access-token'];
     if (token) {
         const str = token;
         const arr = str.split(" ");
@@ -94,11 +94,14 @@ const fabricrollapi = require('./server/routes/fabricrollapi');
 
 const filtersapi = require('./server/routes/filtersapi');
 
+const knitapi = require('./server/routes/knitapi');
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
     extended: false
 }));
+
 app.use(express.static(path.join(__dirname, 'dist')));
 
 app.use('/auth', auth);
@@ -115,10 +118,13 @@ app.use('/fabricrollapi', JWTauthorization, fabricrollapi);
 
 app.use('/filtersapi', JWTauthorization, filtersapi);
 
+app.use('/knitapi', JWTauthorization, knitapi);
+
+
 // app.use('/api',JWTauthorization,api);
 
 // app.get('*', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'dist/index.html'));
+// res.sendFile(path.join(__dirname, 'dist/index.html'));
 // });
 
 const port = process.env.PORT;
@@ -128,13 +134,13 @@ if (process.env.PRODUCTION == 'false') {
     const server = http.createServer(app);
     server.listen(port, () => console.log(`API running on localhost:${port}`));
 } else {
-    // const httpsOptions = {
-    //     cert: fs.readFileSync(process.env.CERTIFICATE),
-    //     ca: fs.readFileSync(process.env.CA_BUNDLE),
-    //     key: fs.readFileSync(process.env.PRIVATE_KEY),
-    // }
-    // const server = https.createServer(httpsOptions, app);
-    // server.listen(port, () => console.log(`API running on localhost:${port}`));
+    const httpsOptions = {
+       cert: fs.readFileSync(process.env.CERTIFICATE),
+       ca: fs.readFileSync(process.env.CA_BUNDLE),
+       key: fs.readFileSync(process.env.PRIVATE_KEY),
+    }
+    const server = https.createServer(httpsOptions, app);
+    server.listen(port, () => console.log(`API running on localhost:${port}`));
 }
 
 app.use(function (err, req, res, next) {

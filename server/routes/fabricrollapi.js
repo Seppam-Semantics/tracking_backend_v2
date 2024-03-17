@@ -5,7 +5,7 @@ const config = require('../config/config');
 const db = require('../config/database');
 const client = require('../utils/client');
 app.set('superSecret', config.secret);
-const { format } = require('date-fns');
+// const { format } = require('date-fns');
 
 
 // ============= Fabric Entries =======================================================================================================
@@ -29,7 +29,7 @@ router.get('/fabric-entrys', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorder: [] });
                     }
                     else {
-                        console.log(rows.RowDataPacket);
+                        // console.log(rows.RowDataPacket);
                         const workorder = rows.RowDataPacket[0][0];
                         const fabricRolls = rows.RowDataPacket[1];
                         res.send({
@@ -53,7 +53,7 @@ router.get('/fabric-entrys', (req, res, next) => {
 
 router.post('/fabric-entrys', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
@@ -90,7 +90,7 @@ router.post('/fabric-entrys', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_fabric_entrys(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -135,7 +135,7 @@ router.get('/transcation-entrys', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorder: [] });
                     }
                     else {
-                        console.log(rows.RowDataPacket);
+                        // console.log(rows.RowDataPacket);
                         const workorder = rows.RowDataPacket[0][0];
                         const entry1 = rows.RowDataPacket[1];
                         const entry2 = rows.RowDataPacket[2];
@@ -144,6 +144,14 @@ router.get('/transcation-entrys', (req, res, next) => {
                         const entry5 = rows.RowDataPacket[5];
                         const entry6 = rows.RowDataPacket[6];
                         const entry7 = rows.RowDataPacket[7];
+                        const total_1 = rows.RowDataPacket[8];
+                        const total_2 = rows.RowDataPacket[9];
+                        const total_3 = rows.RowDataPacket[10];
+                        const total_4 = rows.RowDataPacket[11];
+                        const total_5 = rows.RowDataPacket[12];
+                        const total_6 = rows.RowDataPacket[13];
+                        const total_7 = rows.RowDataPacket[14];
+
 
                         res.send({
                             success: true,
@@ -155,6 +163,13 @@ router.get('/transcation-entrys', (req, res, next) => {
                             entry5 : entry5,
                             entry6 : entry6,
                             entry7 : entry7,
+                            total_1:total_1,
+                            total_2:total_2,
+                            total_3:total_3,
+                            total_4:total_4,
+                            total_5:total_5,
+                            total_6:total_6,
+                            total_7:total_7
 
                         })
                     }
@@ -171,11 +186,11 @@ router.get('/transcation-entrys', (req, res, next) => {
 
 router.post('/transcation-entry1', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_1(id,workorderId,days,noOfRolls,entry_1,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_1(workorderId,days, notes,noOfRolls,entry_1,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry1;
@@ -185,13 +200,14 @@ router.post('/transcation-entry1', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
             var entry_1 = datalist.entry_1 ? datalist.entry_1 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_1)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_1)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -227,11 +243,11 @@ router.post('/transcation-entry1', async (req, res, next) => {
 
 router.post('/transcation-entry2', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_2(id,workorderId,days,noOfRolls,entry_2,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_2(workorderId,days,notes,noOfRolls,entry_2,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry2;
@@ -241,13 +257,14 @@ router.post('/transcation-entry2', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
             var entry_2 = datalist.entry_2 ? datalist.entry_2 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_2)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_2)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -281,13 +298,14 @@ router.post('/transcation-entry2', async (req, res, next) => {
     }
 });
 
+
 router.post('/transcation-entry3', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_3(id,workorderId,days,batchCode,noOfRolls,entry_3,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_3(workorderId,days,notes,batchCode,noOfRolls,entry_3,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry3;
@@ -297,6 +315,7 @@ router.post('/transcation-entry3', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var batchCode = datalist.batchCode;
             var noOfRolls = datalist.noOfRolls;
             var entry_3 = datalist.entry_3 ? datalist.entry_3 : 0;
@@ -304,7 +323,7 @@ router.post('/transcation-entry3', async (req, res, next) => {
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(batchCode)},${db.escape(noOfRolls)},${db.escape(entry_3)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(batchCode)},${db.escape(noOfRolls)},${db.escape(entry_3)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -340,11 +359,11 @@ router.post('/transcation-entry3', async (req, res, next) => {
 
 router.post('/transcation-entry4', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_4(id,workorderId,days,noOfRolls,entry_4,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_4(workorderId,days,notes,noOfRolls,entry_4,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry4;
@@ -354,13 +373,14 @@ router.post('/transcation-entry4', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
             var entry_4 = datalist.entry_4 ? datalist.entry_4 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_4)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_4)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -396,11 +416,11 @@ router.post('/transcation-entry4', async (req, res, next) => {
 
 router.post('/transcation-entry5', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_5(id,workorderId,days,noOfRolls,entry_5,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_5(workorderId,days,notes,noOfRolls,entry_5,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry5;
@@ -410,13 +430,14 @@ router.post('/transcation-entry5', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
             var entry_5 = datalist.entry_5 ? datalist.entry_5 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_5)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_5)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -452,11 +473,11 @@ router.post('/transcation-entry5', async (req, res, next) => {
 
 router.post('/transcation-entry6', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_6(id,workorderId,days,noOfRolls,entry_6,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_6(workorderId,days,notes,noOfRolls,entry_6,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry6;
@@ -466,13 +487,14 @@ router.post('/transcation-entry6', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
             var entry_6 = datalist.entry_6 ? datalist.entry_1 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_6)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_6)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -508,11 +530,11 @@ router.post('/transcation-entry6', async (req, res, next) => {
 
 router.post('/transcation-entry7', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_entry_7(id,workorderId,days,noOfRolls,entry_7,production_date,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_entry_7(workorderId,days,notes,noOfRolls,entry_7,production_date,createdBy,orgId) values "
         var workorderId = req.body.workorderId;
         var entry = req.body.entry;
         var data = req.body.entry7;
@@ -522,13 +544,14 @@ router.post('/transcation-entry7', async (req, res, next) => {
 
             var id = datalist.id ? datalist.id : 0;
             var days = datalist.days;
+            var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
-            var entry_1 = datalist.entry_7 ? datalist.entry_7 : 0;
+            var entry_7 = datalist.entry_7 ? datalist.entry_7 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(workorderId)},${db.escape(days)},${db.escape(noOfRolls)},${db.escape(entry_7)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_7)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
