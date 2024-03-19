@@ -202,7 +202,7 @@ router.get('/workorders-filter', (req, res, next) => {
         var orgId = req.decoded.orgId;
 
         Query = `select A.id,A.buyer,A.orderNo,A.style,A.color,A.size,A.fabType, 
-                    A.fabDia, A.fabGsm, A.yarnType, A.yarnCount, A.knitSL, A.spinFty, A.knitFty, A.dyeinFty, A.yarnLot, A.noRolls, A.isPrint, A.printCount, 
+                    A.fabDia, A.fabGsm, A.yarnType, A.yarnCount, A.knitSL, A.spinFty, A.knitFty, A.dyeinFty, A.yarnLot, A.noRolls, A.isPrint, A.status, A.printCount, 
                     (select sum(entry_1) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_1,
                     (select sum(noOfRolls) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_1,
                     (select sum(entry_2) from transcation_entry2 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_2,
@@ -217,7 +217,7 @@ router.get('/workorders-filter', (req, res, next) => {
                     (select sum(noOfRolls) from transcation_entry6 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_6,
                     (select sum(entry_7) from transcation_entry7 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_7,
                     (select sum(noOfRolls) from transcation_entry7 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_7
-                    from workorder A where A.orgId = ${orgId}  and A.status = 1 and A.delStatus = 0`
+                    from workorder A where A.orgId = ${orgId} and A.delStatus = 0`
 
         if (id > 0) {
             Query = Query + ` and A.id IN (${id})`
@@ -286,8 +286,9 @@ router.put('/workorder/:id', async (req, res, next) => {
         var dyeinFty = req.body.dyeinFty;
         var yarnLot = req.body.yarnLot;
         var noRolls = req.body.noRolls;
+        var status = req.body.status
 
-        client.executeNonQuery('pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, loginId, orgId],
+        client.executeNonQuery('pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, status, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
