@@ -96,6 +96,8 @@ const filtersapi = require('./server/routes/filtersapi');
 
 const knitapi = require('./server/routes/knitapi');
 
+const dyeapi = require('./server/routes/dyeapi');
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
@@ -120,6 +122,7 @@ app.use('/filtersapi', JWTauthorization, filtersapi);
 
 app.use('/knitapi', JWTauthorization, knitapi);
 
+app.use('/dyeapi', JWTauthorization, dyeapi);
 
 // app.use('/api',JWTauthorization,api);
 

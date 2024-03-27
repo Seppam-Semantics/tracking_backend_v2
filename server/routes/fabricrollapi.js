@@ -113,7 +113,7 @@ router.post('/fabric-entrys', async (req, res, next) => {
 });
 
 // ======================================================================================================================================
-// ================================= Transcation datas ==================================================================
+// ================================= Transcation datas ==================================================================================
 //======================================================================================================================================= 
 
 router.get('/transcation-entrys', (req, res, next) => {
@@ -322,19 +322,14 @@ router.post('/transcation-entry3', async (req, res, next) => {
             var production_date = datalist.production_date
 
             bulkInsert =
-
                 `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(batchCode)},${db.escape(noOfRolls)},${db.escape(entry_3)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
-
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
             } else {
                 headerQuery = headerQuery + bulkInsert + ','
-
             }
-
             i = i + 1;
         }
-
         console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_3(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
@@ -379,19 +374,14 @@ router.post('/transcation-entry4', async (req, res, next) => {
             var production_date = datalist.production_date
 
             bulkInsert =
-
                 `(${db.escape(workorderId)},${db.escape(days)},${db.escape(notes)},${db.escape(noOfRolls)},${db.escape(entry_4)},${db.escape(production_date)},${db.escape(loginId)},${db.escape(orgId)})`;
-
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
             } else {
                 headerQuery = headerQuery + bulkInsert + ','
-
             }
-
             i = i + 1;
         }
-
         console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_4(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
