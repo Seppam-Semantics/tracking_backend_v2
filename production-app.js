@@ -98,6 +98,8 @@ const knitapi = require('./server/routes/knitapi');
 
 const dyeapi = require('./server/routes/dyeapi');
 
+const yarnapi = require('./server/routes/yarnapi');
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
@@ -123,6 +125,8 @@ app.use('/filtersapi', JWTauthorization, filtersapi);
 app.use('/knitapi', JWTauthorization, knitapi);
 
 app.use('/dyeapi', JWTauthorization, dyeapi);
+
+app.use('/yarnapi', JWTauthorization, yarnapi);
 
 // app.use('/api',JWTauthorization,api);
 

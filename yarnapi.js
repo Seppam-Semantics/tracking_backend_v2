@@ -137,32 +137,7 @@ router.get('/yarn-status', (req, res, next) => {
         next(err)
     }
 });
-router.get('/yarn-some-status', (req, res, next) => {
-    try {
-        var orgId = req.decoded.orgId;
-        var spinner = req.query.spinner;
-        var lcNo = req.query.lcNo;
 
-        client.executeStoredProcedure('pget_yarnStatus(?,?,?)', [spinner,lcNo,orgId],
-            req, res, next, function (result) {
-                try {
-                    rows = result;
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', status: [] });
-                    }
-                    else {
-                        res.send({ success: true, status: rows.RowDataPacket[0] })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
 
 router.get('/yarn-pi', (req, res, next) => {
     try {
@@ -233,7 +208,6 @@ router.get('/yarn/:id', (req, res, next) => {
                         const yarn_receipts_lines = rows.RowDataPacket[4];
                         const yarn_quality_check = rows.RowDataPacket[5];
                         const yarn_total = rows.RowDataPacket[6]
-                        const yarn_lotNo = rows.RowDataPacket[7]
                         res.send({
                             success: true,
                             yarn :  yarn,
@@ -242,8 +216,7 @@ router.get('/yarn/:id', (req, res, next) => {
                             yarn_lot_check :  yarn_lot_check,
                             yarn_order_allocations :  yarn_order_allocations,
                             yarn_receipts_lines :  yarn_receipts_lines,
-                            yarn_quality_check :  yarn_quality_check,
-                            lotNo: yarn_lotNo
+                            yarn_quality_check :  yarn_quality_check
                         })
                     }
                 }
@@ -257,34 +230,6 @@ router.get('/yarn/:id', (req, res, next) => {
     }
 }); 
 
-router.get('/yarnReceiptForQC', (req, res, next) => {
-    try {
-        var orgId = req.decoded.orgId;
-        var id = req.query.id;
-        var receiptId = req.query.receiptId
-
-        client.executeStoredProcedure('pget_yarnReceiptForQC(?,?,?)', [id,receiptId,orgId],
-            req, res, next, function (result) {
-                try {
-                    rows = result;
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', receipt: [] });
-                    }
-                    else {
-                        res.send({ success: true, receipt: rows.RowDataPacket[0] })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-
 router.post('/yarn', async (req, res, next) => {
     try {
 
@@ -296,7 +241,6 @@ router.post('/yarn', async (req, res, next) => {
         var lcNo = req.body.lcNo ? req.body.lcNo : '';
         var pi = req.body.pi ? req.body.pi : '';
         var piDate = req.body.piDate;
-        var lcYarnTotal = req.body.lcYarnKgs;
         var lcValue = req.body.lcValue ? req.body.lcValue : '';
         var yarnStatus = req.body.yarnStatus ? req.body.yarnStatus : '';
 
@@ -332,7 +276,7 @@ router.post('/yarn', async (req, res, next) => {
 
         console.log(headerQuery)
 
-        client.executeNonQuery('ppost_yarn(?,?,?,?,?,?,?,?,?,?,?,?)', [id, spinner, lcDate, lcNo, pi, piDate, lcYarnTotal, lcValue, yarnStatus, headerQuery, loginId, orgId],
+        client.executeNonQuery('ppost_yarn(?,?,?,?,?,?,?,?,?,?,?)', [id, spinner, lcDate, lcNo, pi, piDate, lcValue, yarnStatus, headerQuery, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -420,7 +364,7 @@ router.post('/yarn_order_allocations', async (req, res, next) => {
         var orgId = req.decoded.orgId;
         var yarnId = req.body.yarnId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_yarn_order_allocations(line_id,yarnLineId,yarnType, buyer, utilisationOrderNo, style, colour, lotNo, allocatedYarnKgs, unallocatedYarnKgs,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_yarn_order_allocations(line_id,yarnLineId,yarnType,utilisationOrderNo, colour, lotNo, allocatedYarnKgs, unallocatedYarnKgs,createdBy,orgId) values "
         var data = req.body.data;
         var i = 0;
         for (let datalist of data) {
@@ -428,15 +372,13 @@ router.post('/yarn_order_allocations', async (req, res, next) => {
             var line_id = datalist.id ? datalist.id : 0;
             var yarnLineId = datalist.yarnLineId ? datalist.yarnLineId : 0;
             var yarnType = datalist.yarnType ? datalist.yarnType : '';
-            var buyer = datalist.buyer ? datalist.buyer: '';
             var utilisationOrderNo = datalist.utilisationOrderNo ? datalist.utilisationOrderNo : '';
-            var style = datalist.style? datalist.style : '';
             var colour = datalist.colour ? datalist.colour : '';
             var lotNo = datalist.lotNo ? datalist.lotNo : '';
             var allocatedYarnKgs = datalist.allocatedYarnKgs ? datalist.allocatedYarnKgs : '';
             var unallocatedYarnKgs = datalist.unallocatedYarnKgs ? datalist.unallocatedYarnKgs : '';
             bulkInsert =
-                `(${db.escape(line_id)},${db.escape(yarnLineId)},${db.escape(yarnType)},${db.escape(buyer)},${db.escape(utilisationOrderNo)},${db.escape(style)},${db.escape(colour)},${db.escape(lotNo)},${db.escape(allocatedYarnKgs)},${db.escape(unallocatedYarnKgs)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(line_id)},${db.escape(yarnLineId)},${db.escape(yarnType)},${db.escape(utilisationOrderNo)},${db.escape(colour)},${db.escape(lotNo)},${db.escape(allocatedYarnKgs)},${db.escape(unallocatedYarnKgs)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -767,57 +709,7 @@ router.get('/yarn_total', (req, res, next) => {
     }
 });
 
-router.get('/yarn_type', (req, res, next) => {
-    try {
-        var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pget_yarnType(?)', [orgId],
-            req, res, next, function (result) {
-                try {
-                    rows = result;
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', types: [] });
-                    }
-                    else {
-                        res.send({ success: true, types: rows.RowDataPacket[0] })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-router.get('/yarn_line_data', (req, res, next) => {
-    try {
-        var orgId = req.decoded.orgId;
-        var yarnId = req.query.id;
-        var lineId = req.query.lineId;
-
-        client.executeStoredProcedure('pget_YarnLineDetails(?,?,?)', [yarnId, lineId, orgId],
-            req, res, next, function (result) {
-                try {
-                    rows = result;
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', data: [] });
-                    }
-                    else {
-                        res.send({ success: true, data: rows.RowDataPacket[0] })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
 
 
 module.exports = router;
