@@ -136,13 +136,13 @@ router.post('/knit', async (req, res, next) => {
         var storageAreaStatus = req.body.storageAreaStatus ? req.body.storageAreaStatus : '';
 
         var data = [];
-        var headerQuery = "INSERT INTO tmp_knit_line(id,knitId,buyer,orderno,style,color,size,knitMachineno,yarnLot,dayProductionKgs,noOfRollsProduced,noOfRollsChecked,knittingSL,machineRPM,oilSystem,yarnTension,needleQuality,sinkerQuality,movingFan,allStopMotion,takeupRollerTension,remarks,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_knit_line(line_id,knitId,buyer,orderno,style,color,size,knitMachineno,yarnLot,dayProductionKgs,noOfRollsProduced,noOfRollsChecked,knittingSL,machineRPM,oilSystem,yarnTension,needleQuality,sinkerQuality,movingFan,allStopMotion,takeupRollerTension,remarks,createdBy,orgId) values "
 
         var data = req.body.data;
         var i = 0;
         for (let datalist of data) {
 
-            var line_id = datalist.id ? datalist.id : 0;
+            var line_id = datalist.id;
             var knitId = id;
             var buyer = datalist.buyer ? datalist.buyer : '';
             var orderNo = datalist.orderNo ? datalist.orderNo : '';

@@ -104,7 +104,7 @@ router.post('/workorder', async (req, res, next) => {
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
-        var headerQuery = "INSERT INTO tmp_workorder(id,buyer,orderno,style,color,size,fabType,fabDia,fabGsm,yarnType,yarnCount,knitSL,spinFty,knitFty,dyeinFty,yarnLot,noRolls,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_workorder(id,buyer,orderno,style,color,size,fabType,fabDia,fabGsm,yarnKg,greigeKg,yarnType,finishKg,knitSL,spinFty,knitFty,dyeinFty,noDays,createdBy,orgId) values "
 
         var data = req.body;
         var i = 0;
@@ -119,19 +119,20 @@ router.post('/workorder', async (req, res, next) => {
             var fabType = datalist.fabType;
             var fabDia = datalist.fabDia;
             var fabGsm = datalist.fabGsm;
+            var yarnKg = datalist.yarnKg;
+            var greigeKg = datalist.greigeKg;
             var yarnType = datalist.yarnType;
-            var yarnCount = datalist.yarnCount;
+            var finishKg = datalist.finishKg;
             var knitSL = datalist.knitSL;
             var spinFty = datalist.spinFty;
             var knitFty = datalist.knitFty;
             var dyeinFty = datalist.dyeinFty;
-            var yarnLot = datalist.yarnLot;
-            var noRolls = datalist.noRolls;
+            var noDays = datalist.noDays;
 
 
             bulkInsert =
 
-                `(${db.escape(id)},${db.escape(buyer)},${db.escape(orderNo)},${db.escape(style)},${db.escape(color)},${db.escape(size)},${db.escape(fabType)},${db.escape(fabDia)},${db.escape(fabGsm)},${db.escape(yarnType)},${db.escape(yarnCount)},${db.escape(knitSL)},${db.escape(spinFty)},${db.escape(knitFty)},${db.escape(dyeinFty)},${db.escape(yarnLot)},${db.escape(noRolls)},${db.escape(loginId)},${db.escape(orgId)})`;
+                `(${db.escape(id)},${db.escape(buyer)},${db.escape(orderNo)},${db.escape(style)},${db.escape(color)},${db.escape(size)},${db.escape(fabType)},${db.escape(fabDia)},${db.escape(fabGsm)},${db.escape(yarnKg)},${db.escape(greigeKg)},${db.escape(yarnType)},${db.escape(finishKg)},${db.escape(knitSL)},${db.escape(spinFty)},${db.escape(knitFty)},${db.escape(dyeinFty)},${db.escape(noDays)},${db.escape(loginId)},${db.escape(orgId)})`;
 
             if (i == (data.length - 1)) {
                 headerQuery = headerQuery + bulkInsert + ';'
@@ -202,7 +203,7 @@ router.get('/workorders-filter', (req, res, next) => {
         var orgId = req.decoded.orgId;
 
         Query = `select A.id,A.buyer,A.orderNo,A.style,A.color,A.size,A.fabType, 
-                    A.fabDia, A.fabGsm, A.yarnType, A.yarnCount, A.knitSL, A.spinFty, A.knitFty, A.dyeinFty, A.yarnLot, A.noRolls, A.isPrint, A.status, A.printCount, 
+                    A.fabDia, A.fabGsm, A.yarnKg, A.greigeKg, A.yarnType, A.finishKg, A.knitSL, A.spinFty, A.knitFty, A.dyeinFty, A.noDays, A.isPrint, A.status, A.printCount, 
                     (select sum(entry_1) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_1,
                     (select sum(noOfRolls) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_1,
                     (select sum(entry_2) from transcation_entry2 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_2,
@@ -278,6 +279,7 @@ router.put('/workorder/:id', async (req, res, next) => {
         var fabType = req.body.fabType;
         var fabDia = req.body.fabDia;
         var fabGsm = req.body.fabGsm;
+        var yarnKg = req.body.yarnKg;
         var yarnType = req.body.yarnType;
         var yarnCount = req.body.yarnCount;
         var knitSL = req.body.knitSL;
@@ -288,7 +290,7 @@ router.put('/workorder/:id', async (req, res, next) => {
         var noRolls = req.body.noRolls;
         var status = req.body.status
 
-        client.executeNonQuery('pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, status, loginId, orgId],
+        client.executeNonQuery('pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnKg, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, status, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;

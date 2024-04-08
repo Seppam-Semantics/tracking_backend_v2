@@ -771,7 +771,7 @@ router.get('/yarn_type', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pget_yarnType(?)', [orgId],
+        client.executeStoredProcedure('pgetall_yarnType(?)', [orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -818,6 +818,7 @@ router.get('/yarn_line_data', (req, res, next) => {
         next(err)
     }
 });
+
 
 
 module.exports = router;
