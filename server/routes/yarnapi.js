@@ -271,7 +271,9 @@ router.get('/yarnReceiptForQC', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', receipt: [] });
                     }
                     else {
-                        res.send({ success: true, receipt: rows.RowDataPacket[0] })
+                        res.send({ success: true, 
+                            receipt: rows.RowDataPacket[0],
+                            yarnQc : rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -284,6 +286,87 @@ router.get('/yarnReceiptForQC', (req, res, next) => {
     }
 });
 
+
+router.get('/yarnlclineForLot', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.query.id;
+        var lineId = req.query.lineId
+
+        client.executeStoredProcedure('pget_yarnLineforLot(?,?,?)', [id,lineId,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', lcData: [] });
+                    }
+                    else {
+                        res.send({ success: true, lcData: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/yarnlclineForOrder', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.query.id;
+        var lineId = req.query.lineId
+
+        client.executeStoredProcedure('pget_yarnLineforOrder(?,?,?)', [id,lineId,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', lcData: [] });
+                    }
+                    else {
+                        res.send({ success: true, lcData: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/yarnlclineForReceipt', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.query.id;
+        var lineId = req.query.lineId
+
+        client.executeStoredProcedure('pget_yarnLineforReceipt(?,?,?)', [id,lineId,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', lcData: [] });
+                    }
+                    else {
+                        res.send({ success: true, lcData: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 router.post('/yarn', async (req, res, next) => {
     try {
@@ -820,12 +903,4 @@ router.get('/yarn_line_data', (req, res, next) => {
 });
 
 
-
 module.exports = router;
-
-
-
-
-
-
-
