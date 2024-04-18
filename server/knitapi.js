@@ -136,20 +136,19 @@ router.post('/knit', async (req, res, next) => {
         var storageAreaStatus = req.body.storageAreaStatus ? req.body.storageAreaStatus : '';
 
         var data = [];
-        var headerQuery = "INSERT INTO tmp_knit_line(line_id,knitId,buyer,orderno,style,color,size,woId,knitMachineno,yarnLot,dayProductionKgs,noOfRollsProduced,noOfRollsChecked,knittingSL,machineRPM,oilSystem,yarnTension,needleQuality,sinkerQuality,movingFan,allStopMotion,takeupRollerTension,remarks,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_knit_line(line_id,knitId,buyer,orderno,style,color,size,knitMachineno,yarnLot,dayProductionKgs,noOfRollsProduced,noOfRollsChecked,knittingSL,machineRPM,oilSystem,yarnTension,needleQuality,sinkerQuality,movingFan,allStopMotion,takeupRollerTension,remarks,createdBy,orgId) values "
 
         var data = req.body.data;
         var i = 0;
         for (let datalist of data) {
 
-            var line_id = datalist.id;
+            var line_id = datalist.id ? datalist.id : 0;
             var knitId = id;
             var buyer = datalist.buyer ? datalist.buyer : '';
             var orderNo = datalist.orderNo ? datalist.orderNo : '';
             var style = datalist.style ? datalist.style : '';
             var color = datalist.color ? datalist.color : '';
             var size = datalist.size ? datalist.size : '';
-            var woId = datalist.woId ? datalist.woId : null;
             var knitMachineno = datalist.knitMachineno ? datalist.knitMachineno : '';
             var yarnLot = datalist.yarnLot ? datalist.yarnLot : '';
             var dayProductionKgs = datalist.dayProductionKgs ? datalist.dayProductionKgs : '';
@@ -175,7 +174,6 @@ router.post('/knit', async (req, res, next) => {
                 ${db.escape(style)},
                 ${db.escape(color)},
                 ${db.escape(size)},
-                ${db.escape(woId)},
                 ${db.escape(knitMachineno)},
                 ${db.escape(yarnLot)},
                 ${db.escape(dayProductionKgs)},
@@ -202,7 +200,7 @@ router.post('/knit', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_knit(?,?,?,?,?,?,?,?,?,?,?)', [id, factory, date, allocatedDay, houseKeepingStatus, floorLightingStatus, gasElecAvailability, storageAreaStatus, headerQuery, loginId, orgId],
             req, res, next, function (result) {
