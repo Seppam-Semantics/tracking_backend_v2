@@ -267,7 +267,6 @@ router.get('/workorders-filter', (req, res, next) => {
 
 router.put('/workorder/:id', async (req, res, next) => {
     try {
-        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var id = req.params.id;
@@ -280,35 +279,36 @@ router.put('/workorder/:id', async (req, res, next) => {
         var fabDia = req.body.fabDia;
         var fabGsm = req.body.fabGsm;
         var yarnKg = req.body.yarnKg;
+        var greigeKg = req.body.greigeKg;
         var yarnType = req.body.yarnType;
-        var yarnCount = req.body.yarnCount;
+        var finishKg = req.body.finishKg;
         var knitSL = req.body.knitSL;
         var spinFty = req.body.spinFty;
         var knitFty = req.body.knitFty;
         var dyeinFty = req.body.dyeinFty;
-        var yarnLot = req.body.yarnLot;
-        var noRolls = req.body.noRolls;
-        var status = req.body.status
+        var noDays = req.body.noDays;
+        var status = req.body.status;
 
-        client.executeNonQuery('pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)', [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnKg, yarnType, yarnCount, knitSL, spinFty, knitFty, dyeinFty, yarnLot, noRolls, status, loginId, orgId],
+        client.executeStoredProcedure(`pput_workorder(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, [id, buyer, orderNo, style, color, size, fabType, fabDia, fabGsm, yarnKg, greigeKg, yarnType, finishKg, knitSL, spinFty, knitFty, dyeinFty, noDays, status, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
                     if (result.success == false) {
-                        res.json({ success: false, message: 'something went worng' });
+                        res.json({ success: false, message: 'something went wrong' });
                     } else {
                         res.json({ success: true, message: 'updated successfully' });
                     }
                 }
                 catch (err) {
-                    next(err)
+                    next(err);
                 }
             });
     }
     catch (err) {
-        next(err)
+        next(err);
     }
 });
+
 
 
 module.exports = router;
