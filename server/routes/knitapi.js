@@ -268,9 +268,8 @@ router.get('/knit-filter', (req, res, next) => {
         var size = req.query.size ? req.query.size : '';
         var orgId = req.decoded.orgId;
 
-        Query = `select kt.id,kt.code,kt.factory,kt.allocatedDay,kt.date,kt.houseKeepingStatus,kt.floorLightingStatus,kt.gasElecAvailability,kt.storageAreaStatus ,
-        ktl.id as line_id,ktl.knitId,ktl.buyer,ktl.orderNo,ktl.style,ktl.color,ktl.size,ktl.knitMachineno,ktl.yarnLot,ktl.dayProductionKgs,ktl.noOfRollsProduced,ktl.noOfRollsChecked,ktl.knittingSL,ktl.machineRPM,ktl.oilSystem,ktl.yarnTension,ktl.needleQuality,ktl.sinkerQuality,ktl.movingFan,ktl.allStopMotion,ktl.takeupRollerTension,ktl.remarks,ktl.orgId,ktl.createdAt from knit kt
-        left join knit_line ktl on ktl.knitId = kt.id  where kt.orgId = ${orgId}  and kt.status = 1 and kt.delStatus = 0`
+        Query = `select kt.id,kt.code,kt.factory,kt.allocatedDay,kt.date,kt.houseKeepingStatus,kt.floorLightingStatus,kt.gasElecAvailability,kt.storageAreaStatus from knit kt
+        where kt.orgId = ${orgId}  and kt.status = 1 and kt.delStatus = 0`
 
         if (id != 0) {
             Query = Query + ` and kt.id = ('${id}')`

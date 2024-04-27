@@ -334,6 +334,215 @@ router.delete('/dye/:id', (req, res, next) => {
     }
 });
 
+
+// <!------------------------------------------------------>
+router.get('/DyeFactoryFilter', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        Query = `SELECT DISTINCT D.dyeFactory FROM dye D WHERE orgId = ${orgId} AND status = 1 AND delStatus = 0;`
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/DyeBuyerFilter', (req, res, next) => {
+    try {
+        var dyeFactory = req.query.dyeFactory ? req.query.dyeFactory : '';
+        var orgId = req.decoded.orgId;
+        Query = `select DISTINCT D.buyer from dye D where D.dyeFactory = '${dyeFactory}' and orgId = '${orgId}' and status = 1 and delStatus = 0`
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/DyeOrderNoFilter', (req, res, next) => {
+    try {
+        var dyeFactory = req.query.dyeFactory ? req.query.dyeFactory : '';
+        var Buyer = req.query.buyer ? req.query.buyer : '';
+        var orgId = req.decoded.orgId;
+        Query = `select DISTINCT D.orderNo from dye D where dyeFactory = '${dyeFactory}' and buyer = '${Buyer}' and orgId = ${orgId} and status = 1 and delStatus = 0;`
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/DyeStyleFilter', (req, res, next) => {
+    try {
+        var dyeFactory = req.query.dyeFactory ? req.query.dyeFactory : '';
+        var Buyer = req.query.buyer ? req.query.buyer : '';
+        var Order = req.query.orderNo ? req.query.orderNo : '';
+        var orgId = req.decoded.orgId;
+        Query = `select DISTINCT D.style from dye D where dyeFactory = '${dyeFactory}' and buyer = '${Buyer}' and orderNo = '${Order}' and orgId = ${orgId} and status = 1 and delStatus = 0;`
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/DyeColorFilter', (req, res, next) => {
+    try {
+        var dyeFactory = req.query.dyeFactory ? req.query.dyeFactory : '';
+        var Buyer = req.query.buyer ? req.query.buyer : '';
+        var Order = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var orgId = req.decoded.orgId;
+        Query = `select DISTINCT D.color from dye D where dyeFactory = '${dyeFactory}' and buyer = '${Buyer}' and orderNo = '${Order}' and style = '${style}' and orgId = ${orgId} and status = 1 and delStatus = 0;`
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+
+
+
+// <!------------------------------------------------------>
+
+router.get('/DyecodeFilter', (req, res, next) => {
+    try {
+        var dyeFactory = req.query.dyeFactory ? req.query.dyeFactory : '';
+        var Buyer = req.query.buyer ? req.query.buyer : '';
+        var Order = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var orgId = req.decoded.orgId;
+        // console.log(Query);
+        client.executeStoredProcedure('pget_dyebatchcode(?,?,?,?,?,?)', [Buyer,Order,style,color,orgId,dyeFactory],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', DyeBatchCode: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            DyeBatchCode: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
 router.get('/dye-filter', (req, res, next) => {
     try {
 
@@ -348,8 +557,8 @@ router.get('/dye-filter', (req, res, next) => {
         var batchNo =  req.query.batchNo ? req.query.batchNo : '';
         var orgId = req.decoded.orgId;
 
-        Query = `select dy.id,dy.code,dy.dyeFactory,dy.buyer,dy.orderNo,dy.style,dy.color,dy.fabricType,dy.softner,dy.silicon,dy.enzyme,dy.batchNo,dy.batchRemarks,dy.batch_batchMakeDate,dy.batch_batchRollsSLCheck,dy.dyeing_loadDatetime,dy.dyeing_unloadingDateTime,dy.dyeing_totalRunTime,dy.dyeing_receipeChart,dy.shade_lapDipOriginalQTX,dy.shade_masterBatchCheck,dy.shade_dyeUnloadShadeCheck,dy.shade_shadeSubmissionDate,dy.shade_shadeApprovalDate,dy.shade_firstBatchNotOkReason,dy.squeezer_squeezerDateTime,dy.squeezer_rpmValue,dy.squeezer_trolleyPlate,dy.squeezer_overfeedValue,dy.squeezer_padderPressureValue,dy.squeezer_shape,dy.squeezer_backAngle,dy.dryer_dryerDatetime,dy.dryer_temperatureValue,dy.dryer_rpmValue,dy.dryer_overfeedValue,dy.calendar_rpmValue,dy.calendar_steamHighLow,dy.slitting_slittingDatetime,dy.slitting_DTwister,dy.slitting_trolleyPlate,dy.stenter_stenterDatetime,dy.stenter_temperatureValue,dy.stenter_overfeedValue,dy.stenter_diasettingValue,dy.stenter_softnerSiliconUsage,dy.compact_openCompactDatetime,dy.compact_rpmValue,dy.compact_overfeedValue,dy.compact_diasettingValue,dy.compact_steamHighLow,dy.tubtex_tubtexDatetime,dy.tubtex_yarnLot,dy.tubtex_overfeedValue,dy.tubtex_steamHighLow,dy.tubtex_rollerKnifeSetting,dy.tubtex_sideLoosePileCheck,dy.tubtex_diaGSMCheck,dy.tubtex_shadeLightBoxDataColor,dy.finalbatch_shrinkageTwistingReport,dy.finalbatch_GSMReport,dy.finalbatch_rollRollShadeCheck,dy.finalbatch_rubbingReportWetDry,dy.finalbatch_phReportInhouseCheck,dy.finalbatch_phenolicYellowingTest,dy.finalbatch_qcInspectionReport,dy.finalbatch_batchRollsWeight,dy.finalbatch_finishRollsWeight,dy.finalbatch_processLoss,dy.finalbatch_fabricDeliveryDatetime,dy.orgId,dy.createdAt,dyl.id as line_id,dyl.dyeId,dyl.size,dyl.griege,dyl.finish,dyl.difference from dye dy
-        left join dye_line dyl on dyl.dyeId = dy.id  where dy.orgId = ${orgId}  and dy.status = 1 and dy.delStatus = 0`
+        Query = `select dy.id,dy.code,dy.dyeFactory,dy.buyer,dy.orderNo,dy.style,dy.color,dy.fabricType,dy.softner,dy.silicon,dy.enzyme,dy.batchNo,dy.batchRemarks,dy.batch_batchMakeDate,dy.batch_batchRollsSLCheck,dy.dyeing_loadDatetime,dy.dyeing_unloadingDateTime,dy.dyeing_totalRunTime,dy.dyeing_receipeChart,dy.shade_lapDipOriginalQTX,dy.shade_masterBatchCheck,dy.shade_dyeUnloadShadeCheck,dy.shade_shadeSubmissionDate,dy.shade_shadeApprovalDate,dy.shade_firstBatchNotOkReason,dy.squeezer_squeezerDateTime,dy.squeezer_rpmValue,dy.squeezer_trolleyPlate,dy.squeezer_overfeedValue,dy.squeezer_padderPressureValue,dy.squeezer_shape,dy.squeezer_backAngle,dy.dryer_dryerDatetime,dy.dryer_temperatureValue,dy.dryer_rpmValue,dy.dryer_overfeedValue,dy.calendar_rpmValue,dy.calendar_steamHighLow,dy.slitting_slittingDatetime,dy.slitting_DTwister,dy.slitting_trolleyPlate,dy.stenter_stenterDatetime,dy.stenter_temperatureValue,dy.stenter_overfeedValue,dy.stenter_diasettingValue,dy.stenter_softnerSiliconUsage,dy.compact_openCompactDatetime,dy.compact_rpmValue,dy.compact_overfeedValue,dy.compact_diasettingValue,dy.compact_steamHighLow,dy.tubtex_tubtexDatetime,dy.tubtex_yarnLot,dy.tubtex_overfeedValue,dy.tubtex_steamHighLow,dy.tubtex_rollerKnifeSetting,dy.tubtex_sideLoosePileCheck,dy.tubtex_diaGSMCheck,dy.tubtex_shadeLightBoxDataColor,dy.finalbatch_shrinkageTwistingReport,dy.finalbatch_GSMReport,dy.finalbatch_rollRollShadeCheck,dy.finalbatch_rubbingReportWetDry,dy.finalbatch_phReportInhouseCheck,dy.finalbatch_phenolicYellowingTest,dy.finalbatch_qcInspectionReport,dy.finalbatch_batchRollsWeight,dy.finalbatch_finishRollsWeight,dy.finalbatch_processLoss,dy.finalbatch_fabricDeliveryDatetime,dy.orgId,dy.createdAt from dye dy
+        where dy.orgId = ${orgId}  and dy.status = 1 and dy.delStatus = 0`
 
         if (id != 0) {
             Query = Query + ` and dy.id = ('${id}')`

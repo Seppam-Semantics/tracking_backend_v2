@@ -479,7 +479,7 @@ router.post('/transcation-entry6', async (req, res, next) => {
             var days = datalist.days;
             var notes = datalist.notes;
             var noOfRolls = datalist.noOfRolls;
-            var entry_6 = datalist.entry_6 ? datalist.entry_1 : 0;
+            var entry_6 = datalist.entry_6 ? datalist.entry_6 : 0;
             var production_date = datalist.production_date
 
             bulkInsert =
@@ -563,6 +563,189 @@ router.post('/transcation-entry7', async (req, res, next) => {
                         res.json({ success: false, message: 'something went worng' });
                     } else {
                         res.json({ success: true, message: 'Entry-7 added successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.delete('/entry1', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry1(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry2', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry2(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry3', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry3(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry4', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry4(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry5', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry5(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry6', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry6(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/entry7', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var loginId = req.decoded.loginId;
+        var line_Id = req.query.line_Id
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_entry7(?,?,?,?)', [id, line_Id, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
                     }
                 }
                 catch (err) {
