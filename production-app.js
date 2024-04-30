@@ -19,7 +19,7 @@ var jwt = require('jsonwebtoken');
 
 const logDir = path.join(__dirname, 'logs');
 
-// Create the logs directory if it doesn't exist
+
 if (!fs.existsSync(logDir)) {
     fs.mkdirSync(logDir);
 }
@@ -37,8 +37,7 @@ const logger = winston.createLogger({
             filename: path.join(logDir, 'error-%DATE%.log'),
             datePattern: 'YYYY-MM-DD',
             zippedArchive: true,
-            maxSize: '20m', // Rotate when log file reaches 20MB
-            // maxFiles: '14d', // Keep logs for 14 days
+            maxSize: '20m', 
         }),
         new winston.transports.Console(),
     ],
@@ -69,14 +68,13 @@ function JWTauthorization(req, res, next) {
             message: 'no token provided.'
         });
     }
-    //  logger.info('Warning',new Date(), req.method, req.url, req.body,req.decoded);
-    //  console.log(new Date(), req.method, req.url,'Token Status' + res.success);
+
 }
 var router = express.Router();
 
 router.use(function (req, res, next) {
-    // do logging
-    next(); // make sure we go to the next routes and don't stop here
+    
+    next(); 
 });
 
 
@@ -99,6 +97,8 @@ const knitapi = require('./server/routes/knitapi');
 const dyeapi = require('./server/routes/dyeapi');
 
 const yarnapi = require('./server/routes/yarnapi');
+
+const knittodye = require('./server/routes/knittodye');
 
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
@@ -128,11 +128,8 @@ app.use('/dyeapi', JWTauthorization, dyeapi);
 
 app.use('/yarnapi', JWTauthorization, yarnapi);
 
-// app.use('/api',JWTauthorization,api);
+app.use('/knittodye', JWTauthorization, knittodye);
 
-// app.get('*', (req, res) => {
-// res.sendFile(path.join(__dirname, 'dist/index.html'));
-// });
 
 const port = process.env.PORT;
 app.set('port', port);
@@ -151,8 +148,6 @@ if (process.env.PRODUCTION == 'false') {
 }
 
 app.use(function (err, req, res, next) {
-    // winston.level = 'error';
-    // logger.error('error', "Request URL : " + req.url, err.stack);
     logError(err);
     res.status(500).send({ success: false, ResultObj: req.resultObj, error: err.stack })
 })

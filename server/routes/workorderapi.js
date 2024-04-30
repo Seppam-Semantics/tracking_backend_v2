@@ -204,19 +204,19 @@ router.get('/workorders-filter', (req, res, next) => {
 
         Query = `select A.id,A.buyer,A.orderNo,A.style,A.color,A.size,A.fabType, 
                     A.fabDia, A.fabGsm, A.yarnKg, A.greigeKg, A.yarnType, A.finishKg, A.knitSL, A.spinFty, A.knitFty, A.dyeinFty, A.noDays, A.isPrint, A.status, A.printCount, 
-                    (select sum(entry_1) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_1,
+                    (select ROUND(sum(entry_1),2) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_1,
                     (select sum(noOfRolls) from transcation_entry1 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_1,
-                    (select sum(entry_2) from transcation_entry2 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_2,
+                    (select ROUND(sum(entry_2),2) from transcation_entry2 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_2,
                     (select sum(noOfRolls) from transcation_entry2 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_2,
-                    (select sum(entry_3) from transcation_entry3 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_3,
+                    (select ROUND(sum(entry_3),2) from transcation_entry3 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_3,
                     (select sum(noOfRolls) from transcation_entry3 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_3,
-                    (select sum(entry_4) from transcation_entry4 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_4,
+                    (select ROUND(sum(entry_4),2) from transcation_entry4 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_4,
                     (select sum(noOfRolls) from transcation_entry4 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_4,
-                    (select sum(entry_5) from transcation_entry5 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_5,
+                    (select ROUND(sum(entry_5),2) from transcation_entry5 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_5,
                     (select sum(noOfRolls) from transcation_entry5 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_5,
-                    (select sum(entry_6) from transcation_entry6 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_6,
+                    (select ROUND(sum(entry_6),2) from transcation_entry6 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_6,
                     (select sum(noOfRolls) from transcation_entry6 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_6,
-                    (select sum(entry_7) from transcation_entry7 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_7,
+                    (select ROUND(sum(entry_7),2) from transcation_entry7 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) AS total_7,
                     (select sum(noOfRolls) from transcation_entry7 where workorderId = A.id and orgId = ${orgId} and status = 1 and delStatus = 0) as totalRolls_7
                     from workorder A where A.orgId = ${orgId} and A.delStatus = 0`
 
