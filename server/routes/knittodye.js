@@ -139,7 +139,7 @@ router.post('/knit-delivery', async (req, res, next) => {
         var i = 0;
         for (let datalist of data) {
 
-            var line_id = datalist.id;
+            var line_id = datalist.id ? datalist.id : 0;
             var knitDelId = id;
             var dyeFactory = datalist.dyeFactory? datalist.dyeFactory : '';
             var knitChallan = datalist.knitChallan? datalist.knitChallan : '';

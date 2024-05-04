@@ -261,42 +261,22 @@ router.get('/knit-filter', (req, res, next) => {
         var id = req.query.id ? req.query.id : 0;
         var factory = req.query.factory ? req.query.factory : '';
         var date = req.query.date ? req.query.date : null;
-        var buyer = req.query.buyer ? req.query.buyer : '';
-        var orderNo = req.query.orderNo ? req.query.orderNo : '';
-        var style = req.query.style ? req.query.style : '';
-        var color = req.query.color ? req.query.color : '';
-        var size = req.query.size ? req.query.size : '';
         var orgId = req.decoded.orgId;
 
-        Query = `select kt.id,kt.code,kt.factory,kt.allocatedDay,kt.date,kt.houseKeepingStatus,kt.floorLightingStatus,kt.gasElecAvailability,kt.storageAreaStatus from knit kt
+        Query = `select kt.id,kt.code,kt.factory,kt.allocatedDay,DATE_FORMAT(kt.date, '%Y-%m-%d') as date,kt.houseKeepingStatus,kt.floorLightingStatus,kt.gasElecAvailability,kt.storageAreaStatus from knit kt
         where kt.orgId = ${orgId}  and kt.status = 1 and kt.delStatus = 0`
 
         if (id != 0) {
             Query = Query + ` and kt.id = ('${id}')`
         }
         if (factory != '') {
-            Query = Query + ` and kt.factory = ('${factory}')`
+            Query = Query + ` and kt.factory = '${factory}'`
         }
         if (date != null) {
-            Query = Query + ` and kt.date = ('${date}')`
-        }
-        if (buyer != '') {
-            Query = Query + ` and ktl.buyer IN ('${buyer}')`
-        }
-        if (orderNo != '') {
-            Query = Query + ` and ktl.orderNo IN ('${orderNo}')`
-        }
-        if (style != '') {
-            Query = Query + ` and ktl.style IN ('${style}')`
-        }
-        if (color != '') {
-            Query = Query + ` and ktl.color IN ('${color}')`
-        }
-        if (size != '') {
-            Query = Query + ` and ktl.size IN ('${size}')`
+            Query = Query + ` and DATE_FORMAT(kt.date, '%Y-%m-%d') = '${date}'`
         }
 
-        // console.log(Query);
+        console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -323,6 +303,30 @@ router.get('/knit-filter', (req, res, next) => {
 });
 
 
+router.get('/knit-date', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_knit_date(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', date: [] });
+                    }
+                    else {
+                        res.send({ success: true, date: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 module.exports = router;
 

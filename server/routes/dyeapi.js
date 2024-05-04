@@ -246,7 +246,7 @@ router.post('/dye', async (req, res, next) => {
 
 
         var data = [];
-        var headerQuery = "INSERT INTO tmp_dye_line(line_id,dyeId,size,woId,greigeRolls,griege,finishRolls,finish,difference,createdBy,orgId) values "
+        var headerQuery = "INSERT INTO tmp_dye_line(line_id,dyeId,size,woId,greigeRolls,griege,finishRolls,finish,difference,processloss,createdBy,orgId) values "
         var data = req.body.data;
         var i = 0;
         for (let datalist of data) {
@@ -260,6 +260,7 @@ router.post('/dye', async (req, res, next) => {
             var finishrolls = datalist.finishrolls ? datalist.finishrolls : 0;
             var finish = datalist.finish ? datalist.finish : 0;
             var difference = (griege - finish);
+            var processloss = (difference/griege)*100
             bulkInsert =
                 `(${db.escape(line_id)},
                 ${db.escape(dyeId)},
@@ -270,6 +271,7 @@ router.post('/dye', async (req, res, next) => {
                 ${db.escape(finishrolls)},
                 ${db.escape(finish)},
                 ${db.escape(difference)},
+                ${db.escape(processloss)},
                 ${db.escape(loginId)},
                 ${db.escape(orgId)})`;
 
