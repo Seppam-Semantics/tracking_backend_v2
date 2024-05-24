@@ -907,7 +907,7 @@ router.get('/yarnreport/:id', (req, res, next) => {
     try {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
-        client.executeStoredProcedure('pview_yarn_report(?,?)', [id, orgId],
+        client.executeStoredProcedure('pview_yarn_report_2(?,?)', [id, orgId],
             req, res, next, async function (result) {
                 try {
                     rows = result;
@@ -916,24 +916,14 @@ router.get('/yarnreport/:id', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', employee: [] });
                     }
                     else {
+                        // const all = rows.RowDataPacket;
                         const yarn = rows.RowDataPacket[0];
                         const yarn_lc_lines = rows.RowDataPacket[1];
-                        const yarn_lot_check = rows.RowDataPacket[2];
-                        const yarn_order_allocations = rows.RowDataPacket[3];
-                        const yarn_receipts_lines = rows.RowDataPacket[4];
-                        const yarn_quality_check = rows.RowDataPacket[5];
-                        const yarn_total = rows.RowDataPacket[6]
-                        const yarn_lotNo = rows.RowDataPacket[7]
                         res.send({
                             success: true,
+                            // all:all,
                             yarn :  yarn,
-                            yarn_lc_lines :  yarn_lc_lines,
-                            yarn_lc_total : yarn_total,
-                            yarn_lot_check :  yarn_lot_check,
-                            yarn_order_allocations :  yarn_order_allocations,
-                            yarn_receipts_lines :  yarn_receipts_lines,
-                            yarn_quality_check :  yarn_quality_check,
-                            lotNo: yarn_lotNo
+                            yarn_lc_lines :  yarn_lc_lines
                         })
                     }
                 }
