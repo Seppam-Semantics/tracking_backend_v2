@@ -91,6 +91,35 @@ router.get('/knit-delivery', (req, res, next) => {
     }
 });
 
+
+router.get('/knit-delivery_Fillter', (req, res, next) => {
+    try {
+        var knitfty = req.query.knitfty?req.query.knitfty:''
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_knit_delivery_Fillter(?,?)', [knitfty,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', knitDelivery: [] });
+                    }
+                    else {
+                        res.send({ success: true, knitfty: rows.RowDataPacket[0] ,knitDelivery: rows.RowDataPacket[1] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
 router.get('/knit-delivery/:id', (req, res, next) => {
     try {
         var id = req.params.id;

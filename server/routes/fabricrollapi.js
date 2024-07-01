@@ -759,7 +759,6 @@ router.delete('/entry7', (req, res, next) => {
 });
 
 
-
 router.post('/fabrictransfer', async (req, res, next) => {
     try {
         // console.log(req.body)
@@ -822,7 +821,39 @@ router.post('/fabrictransfer', async (req, res, next) => {
 router.get('/allFabEntrys', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        client.executeStoredProcedure('pgetall_fabEntry(?)', [orgId],
+        var Buyer = req.query.Buyer ? req.query.Buyer : '';
+        var Order = req.query.Order ? req.query.Order : '';
+        var ToDate = req.query.toDate ? req.query.toDate : '';
+        var FromDate = req.query.fromDate ? req.query.fromDate : '';
+        Query = `SELECT 
+        id, 
+        buyer, 
+        orderNo, 
+        style, 
+        color, 
+        size, 
+        woId, 
+        rollNo, 
+        finishKg, 
+        date_format(transfer_date, "%Y-%m-%d") AS transfer_date, 
+        transferno , 
+        date_format(createdAt ,"%Y-%m-%d")
+        FROM fabrictransfer WHERE orgId = ${orgId}`
+
+        if (Buyer != '') {
+            Query = Query + ` and buyer = ('${Buyer}')`
+        }
+        
+        if (Order != '') {
+            Query = Query + ` and orderNo = ('${Order}')`
+        }
+
+        if (FromDate != '') {
+            Query = Query + ` and date_format(createdAt ,"%Y-%m-%d") BETWEEN ('${FromDate}') AND ('${ToDate}')`
+        }
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
                     rows = result;
@@ -878,6 +909,31 @@ router.get('/singleFabEntrys/:id', (req, res, next) => {
     }
 });
 
+
+router.delete('/FabEntrysDelete/:id', (req, res, next) => {
+    try {
+        var id = req.params.id;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_FabricsTransferList(?,?)', [id,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 
 module.exports = router;

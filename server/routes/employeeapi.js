@@ -20,7 +20,6 @@ app.set('superSecret', config.secret);
 //         }
 //     });
 // }
-
 async function generateQuery(id, data, query) {
     return new Promise((resolve, reject) => {
         if (data) {
@@ -74,13 +73,11 @@ router.get('/employee', (req, res, next) => {
         next(err)
     }
 });
-
-
 router.get('/employee/:id', (req, res, next) => {
     try {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
-        client.executeStoredProcedure('pview_employee(?,?)', [id, orgId],
+        client.executeStoredProcedure('pview_employee(?,?)', [orgId , id],
             req, res, next, async function (result) {
                 try {
                     rows = result;
@@ -105,8 +102,6 @@ router.get('/employee/:id', (req, res, next) => {
         next(err)
     }
 });
-
-
 router.post('/employee', async (req, res, next) => {
     try {
 
@@ -145,7 +140,6 @@ router.post('/employee', async (req, res, next) => {
         next(err)
     }
 });
-
 
 router.delete('/employee/:id', (req, res, next) => {
     try {

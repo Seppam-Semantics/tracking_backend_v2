@@ -16,7 +16,7 @@ router.post('/authentication', function (req, res, next) {
     var userName = req.body.userName;
     var password = req.body.password;
     var hashedPassword = hash.generate(password);
-    // console.log(hashedPassword);
+    console.log(hashedPassword);
     client.executeStoredProcedure('pauthenticateUser(?)', [userName], req, res, next, async function (result) {
         if (!result.RowDataPacket) {
             res.json({ success: false, error: 'username not exsists', data: [] });
@@ -178,5 +178,28 @@ router.get('/org-profile', (req, res, next) => {
     }
 });
 
+router.get('/organization', (req, res, next) => {
+    try {
+        
+        client.executeStoredProcedure('pget_organization()', [],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, org: rows.RowDataPacket[0] });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 module.exports = router;

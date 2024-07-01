@@ -142,14 +142,14 @@ router.post('/knit', async (req, res, next) => {
         var i = 0;
         for (let datalist of data) {
 
-            var line_id = datalist.id? datalist.id : 0;
+            var line_id = datalist.id ? datalist.id : 0;
             var knitId = id;
             var buyer = datalist.buyer ? datalist.buyer : '';
             var orderNo = datalist.orderNo ? datalist.orderNo : '';
             var style = datalist.style ? datalist.style : '';
             var color = datalist.color ? datalist.color : '';
             var size = datalist.size ? datalist.size : '';
-            var woId = datalist.woId ? datalist.woId : null;
+            var woId = datalist.woId;
             var knitMachineno = datalist.knitMachineno ? datalist.knitMachineno : '';
             var yarnLot = datalist.yarnLot ? datalist.yarnLot : '';
             var dayProductionKgs = datalist.dayProductionKgs ? datalist.dayProductionKgs : '';
@@ -302,7 +302,6 @@ router.get('/knit-filter', (req, res, next) => {
     }
 });
 
-
 router.get('/knit-date', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
@@ -328,6 +327,31 @@ router.get('/knit-date', (req, res, next) => {
     }
 });
 
+
+router.get('/KF-Inventory', (req, res, next) => {
+    try {
+        var porgId = req.decoded.porgId;
+        var pdate = req.query.date;
+        client.executeStoredProcedure('pknitfactoryinventory(?,?)', [pdate,porgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', date: [] });
+                    }
+                    else {
+                        res.send({ success: true, KnitFactoryInventory: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 
 router.post('/knitworkorder', async (req, res, next) => {
@@ -480,7 +504,169 @@ router.get('/knitworkorder/:id', (req, res, next) => {
     }
 });
 
+router.delete('/knitworkorder/:id', (req, res, next) => {
+    try {
+        var id = req.params.id;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_knitworkorderList(?,?)', [id,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
 
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/knitworkorder_Fty_Fillter', (req, res, next) => {
+    try {
+        var knitfty = req.query.knitfty?req.query.knitfty:''
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_knitWo_fty_filter(?,?)', [knitfty,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorders: [] });
+                    }
+                    else {
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] , buyer: rows.RowDataPacket[1] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/knitworkorder_buyer_Fillter', (req, res, next) => {
+    try {
+        var knitfty = req.query.knitfty?req.query.knitfty:''
+        var buyer = req.query.buyer?req.query.buyer:''
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_knitWo_buyer_filter(?,?,?)', [buyer,knitfty,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorders: [] });
+                    }
+                    else {
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] , orderNo: rows.RowDataPacket[1] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/knitworkorder_order_Fillter', (req, res, next) => {
+    try {
+        var knitfty = req.query.knitfty?req.query.knitfty:''
+        var buyer = req.query.buyer?req.query.buyer:''
+        var order = req.query.order?req.query.order:''
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_knitWo_order_filter(?,?,?,?)', [order,buyer,knitfty,orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorders: [] });
+                    }
+                    else {
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] , orderNo: rows.RowDataPacket[1] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/Day-Knit', (req, res, next) => {
+    try {
+        var date = req.query.date ? req.query.date : null;;
+
+        client.executeStoredProcedure('pday_Knit(?)', [date],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorders: [] });
+                    }
+                    else {
+                        res.send({ success: true, data: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/knitauth', (req, res, next) => {
+    try {
+        var porgId = req.decoded.porgId;
+        var pfactory = req.query.factory;
+        var pbuyer = req.query.buyer;
+        var porder = req.query.orderNo;
+        var pstyle = req.query.style;
+        var pcolor = req.query.color;
+        var psize = req.query.size;
+        client.executeStoredProcedure('pget_knitauth(?,?,?,?,?,?)', [pfactory, pbuyer, porder, pstyle, pcolor, psize],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', knitWoDetails: [] });
+                    }
+                    else {
+                        res.send({ success: true, knitWoDetails: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 module.exports = router;
 

@@ -902,6 +902,236 @@ router.get('/yarn_line_data', (req, res, next) => {
     }
 });
 
+router.delete('/yarnEntryDelete', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var line = req.query.line
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_lcyarn(?,?,?,?)', [id, line, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/lotCheckDelete', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var line = req.query.line;
+        var lotCheckid = req.query.lotCheckid;
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_lotCheck(?,?,?,?,?)', [id, line, lotCheckid ,loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.delete('/orderDelete', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var line = req.query.line;
+        var orderid = req.query.orderid;
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_order(?,?,?,?,?)', [id, line, orderid ,loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+router.delete('/ReceiptDelete', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var line = req.query.line;
+        var ReceiptId = req.query.ReceiptId;
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_Receipt(?,?,?,?,?)', [id, line, ReceiptId ,loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.delete('/YarnQCDelete', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var line = req.query.line;
+        var YarnQCid = req.query.YarnQCid;
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        client.executeNonQuery('pdelete_YarnQC(?,?,?,?,?)', [id, line, YarnQCid ,loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'delete successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+router.get('/LC-Outstanding', (req, res, next) => {
+    try {
+
+        var orgId = req.decoded.orgId;
+        var date = req.query.date? req.query.date : ''
+        console.log(date)
+        Query = `select 
+        y.lcNo, 
+        date_format(y.lcDate , "%Y-%m-%d" ) as lcDate,  
+        y.pi, 
+        date_format(y.piDate , "%Y-%m-%d" ) as piDate ,
+        max(yll.yarnType) as yarnType, 
+        yll.lcYarnKgs as lcYarnKgs, 
+        yll.yarnRate as yarnRate, 
+        yll.yarnValue as yarnValue,
+        round(sum(YOA.allocatedYarnKgs),2) as allocatedYarnKgs, 
+        round(sum(YOA.unallocatedYarnKgs),2) as unallocatedYarnKgs, 
+        round(sum(YRL.receiptYarnKgs),2) as receiptYarnKgs 
+        from yarn y 
+	LEFT JOIN yarn_lc_lines yll ON y.id = yll.yarnId
+        LEFT JOIN yarn_order_allocations YOA ON yll.id = YOA.yarnLineId and y.id = YOA.yarnId
+        LEFT JOIN yarn_receipts_lines YRL ON YOA.id = YRL.yarnOrderId and y.id = YRL.yarnId  	
+        where y.orgId = ${orgId} and y.status = 1 and y.delStatus = 0`
+
+        // console.log(Query);
+
+        if (date != '') {
+            Query = Query + ` and date_format(y.lcDate , '%Y-%m-%d' ) = ('${date}')  group by y.lcNo,  y.lcDate, y.pi,  y.piDate, yll.yarnType, yll.lcYarnKgs, yll.yarnRate, yll.yarnValue; `
+        }else{
+            Query = Query + ` group by y.lcNo,  y.lcDate, y.pi,  y.piDate, yll.yarnType, yll.lcYarnKgs, yll.yarnRate, yll.yarnValue; `
+        }
+        
+        // console.log(Query);
+        
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            LCOutstanding: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+router.get('/yarn_reconciliation', (req, res, next) => {
+    try {
+        var porgId = req.decoded.porgId;
+        var pdate1 = req.query.date1 ? req.query.date1 : null;
+        var pdate2 = req.query.date2 ? req.query.date2 : null;
+        client.executeStoredProcedure('pyarn_reconciliation(?,?,?)', [pdate1,pdate2,porgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', date: [] });
+                    }
+                    else {
+                        res.send({ success: true, YarnReconciliation: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 router.get('/yarnreport/:id', (req, res, next) => {
     try {
