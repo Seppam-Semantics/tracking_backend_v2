@@ -1456,14 +1456,14 @@ router.get('/fsize-master', (req, res, next) => {
 router.get('/fsize-master-filter', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        var dyeType = req.body.dyeType;
+        var size = req.query.size;
 
-        client.executeStoredProcedure('pgetall_fsize_master_filter(?,?)', [dyeType, orgId],
+        client.executeStoredProcedure('pgetall_fsize_master_filter(?,?)', [size, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
                     if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', DyeType: [] });
+                        res.json({ success: false, message: 'no records found!', fsize: [] });
                     }
                     else {
                         res.send({ success: true, fsize: rows.RowDataPacket[0] })
