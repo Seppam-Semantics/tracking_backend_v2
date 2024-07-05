@@ -862,10 +862,10 @@ router.get('/yarn_type_BO', (req, res, next) => {
 router.get('/RejTypeLoss_BO', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        var colorid = req.query.color ? req.query.color : ''
+        var color = req.query.color ? req.query.color : ''
 
         Query = `select round(sum(losses),2) as losses from rej_type_master_line rtml left join rej_type_master rtm on rtm.id = rtml.rejTypeId 
-        WHERE rtml.colorId = ${colorid} and rtm.delStatus = 0 and rtm.status = 1;`
+        WHERE rtml.colorId = ${color} and rtm.delStatus = 0 and rtm.status = 1;`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {
@@ -934,7 +934,7 @@ router.get('/ColorLoss_BO', (req, res, next) => {
         var color = req.query.color;
 
 
-        Query = `select sum(dye_process_loss)  as DyeProcessLoss from colors where id = '${color}' ;`
+        Query = `select sum(dye_process_loss)  as DyeProcessLoss from colors where id ='{color}';`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {

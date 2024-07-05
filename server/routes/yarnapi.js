@@ -1065,7 +1065,7 @@ router.get('/LC-Outstanding', (req, res, next) => {
         round(sum(YOA.unallocatedYarnKgs),2) as unallocatedYarnKgs, 
         round(sum(YRL.receiptYarnKgs),2) as receiptYarnKgs 
         from yarn y 
-	LEFT JOIN yarn_lc_lines yll ON y.id = yll.yarnId
+	    LEFT JOIN yarn_lc_lines yll ON y.id = yll.yarnId
         LEFT JOIN yarn_order_allocations YOA ON yll.id = YOA.yarnLineId and y.id = YOA.yarnId
         LEFT JOIN yarn_receipts_lines YRL ON YOA.id = YRL.yarnOrderId and y.id = YRL.yarnId  	
         where y.orgId = ${orgId} and y.status = 1 and y.delStatus = 0`

@@ -260,20 +260,32 @@ router.get('/knit-filter', (req, res, next) => {
 
         var id = req.query.id ? req.query.id : 0;
         var factory = req.query.factory ? req.query.factory : '';
+        var order = req.query.order ? req.query.order : '';
         var date = req.query.date ? req.query.date : null;
         var orgId = req.decoded.orgId;
 
-        Query = `select kt.id,kt.code,kt.factory,kt.allocatedDay,DATE_FORMAT(kt.date, '%Y-%m-%d') as date,kt.houseKeepingStatus,kt.floorLightingStatus,kt.gasElecAvailability,kt.storageAreaStatus from knit kt
-        where kt.orgId = ${orgId}  and kt.status = 1 and kt.delStatus = 0`
+        Query = `SELECT 
+    kt.id, 
+    kt.factory, 
+    ktl.orderNo,
+    ktl.color,
+    kt.allocatedDay, 
+    DATE_FORMAT(kt.date, '%Y-%m-%d') as date, 
+    ktl.dayProductionKgs as totalDayProductionKgs, 
+    ktl.noOfRollsProduced as totalNoOfRollsProduced, 
+    kt.orgId, 
+    kt.createdAt 
+    FROM 
+        knit kt 
+    INNER JOIN 
+        knit_line ktl ON kt.id = ktl.knitId
+    WHERE 
+        kt.orgId = ${orgId} 
+        AND kt.status = 1 
+        AND kt.delStatus = 0  `
 
-        if (id != 0) {
-            Query = Query + ` and kt.id = ('${id}')`
-        }
-        if (factory != '') {
-            Query = Query + ` and kt.factory = '${factory}'`
-        }
-        if (date != null) {
-            Query = Query + ` and DATE_FORMAT(kt.date, '%Y-%m-%d') = '${date}'`
+        if (order != '') {
+            Query = Query + ` and orderNo = ${order}`
         }
 
         console.log(Query);
@@ -301,6 +313,48 @@ router.get('/knit-filter', (req, res, next) => {
         next(err)
     }
 });
+
+
+router.get('/order-filter', (req, res, next) => {
+    try {
+
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct ktl.orderNo
+        FROM 
+            knit kt 
+        INNER JOIN 
+            knit_line ktl ON kt.id = ktl.knitId ;`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', order: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            order: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+
 
 router.get('/knit-date', (req, res, next) => {
     try {
@@ -332,7 +386,7 @@ router.get('/KF-Inventory', (req, res, next) => {
     try {
         var porgId = req.decoded.porgId;
         var pdate = req.query.date;
-        client.executeStoredProcedure('pknitfactoryinventory(?,?)', [pdate,porgId],
+        client.executeStoredProcedure('pknitfactoryinventory(?,?)', [pdate, porgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -380,7 +434,7 @@ router.post('/knitworkorder', async (req, res, next) => {
         var i = 0;
         for (let datalist of data) {
 
-            var line_id = datalist.id? datalist.id : 0;
+            var line_id = datalist.id ? datalist.id : 0;
             var knitWoId = id;
             var machDia = datalist.machDia;
             var fabDia = datalist.fabDia;
@@ -396,7 +450,7 @@ router.post('/knitworkorder', async (req, res, next) => {
 
 
             bulkInsert =
-              `(${db.escape(line_id)},
+                `(${db.escape(line_id)},
                 ${db.escape(knitWoId)},
                 ${db.escape(machDia)},
                 ${db.escape(fabDia)},
@@ -436,7 +490,7 @@ router.post('/knitworkorder', async (req, res, next) => {
                         }
 
                     }
-                }catch (err) {
+                } catch (err) {
                     next(err)
                 }
             });
@@ -508,7 +562,7 @@ router.delete('/knitworkorder/:id', (req, res, next) => {
     try {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
-        client.executeNonQuery('pdelete_knitworkorderList(?,?)', [id,orgId],
+        client.executeNonQuery('pdelete_knitworkorderList(?,?)', [id, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -531,10 +585,10 @@ router.delete('/knitworkorder/:id', (req, res, next) => {
 
 router.get('/knitworkorder_Fty_Fillter', (req, res, next) => {
     try {
-        var knitfty = req.query.knitfty?req.query.knitfty:''
+        var knitfty = req.query.knitfty ? req.query.knitfty : ''
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pgetall_knitWo_fty_filter(?,?)', [knitfty,orgId],
+        client.executeStoredProcedure('pgetall_knitWo_fty_filter(?,?)', [knitfty, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -542,7 +596,7 @@ router.get('/knitworkorder_Fty_Fillter', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true, workorders: rows.RowDataPacket[0] , buyer: rows.RowDataPacket[1] })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0], buyer: rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -558,11 +612,11 @@ router.get('/knitworkorder_Fty_Fillter', (req, res, next) => {
 
 router.get('/knitworkorder_buyer_Fillter', (req, res, next) => {
     try {
-        var knitfty = req.query.knitfty?req.query.knitfty:''
-        var buyer = req.query.buyer?req.query.buyer:''
+        var knitfty = req.query.knitfty ? req.query.knitfty : ''
+        var buyer = req.query.buyer ? req.query.buyer : ''
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pgetall_knitWo_buyer_filter(?,?,?)', [buyer,knitfty,orgId],
+        client.executeStoredProcedure('pgetall_knitWo_buyer_filter(?,?,?)', [buyer, knitfty, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -570,7 +624,7 @@ router.get('/knitworkorder_buyer_Fillter', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true, workorders: rows.RowDataPacket[0] , orderNo: rows.RowDataPacket[1] })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0], orderNo: rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -586,12 +640,12 @@ router.get('/knitworkorder_buyer_Fillter', (req, res, next) => {
 
 router.get('/knitworkorder_order_Fillter', (req, res, next) => {
     try {
-        var knitfty = req.query.knitfty?req.query.knitfty:''
-        var buyer = req.query.buyer?req.query.buyer:''
-        var order = req.query.order?req.query.order:''
+        var knitfty = req.query.knitfty ? req.query.knitfty : ''
+        var buyer = req.query.buyer ? req.query.buyer : ''
+        var order = req.query.order ? req.query.order : ''
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pgetall_knitWo_order_filter(?,?,?,?)', [order,buyer,knitfty,orgId],
+        client.executeStoredProcedure('pgetall_knitWo_order_filter(?,?,?,?)', [order, buyer, knitfty, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -599,7 +653,7 @@ router.get('/knitworkorder_order_Fillter', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true, workorders: rows.RowDataPacket[0] , orderNo: rows.RowDataPacket[1] })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0], orderNo: rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
