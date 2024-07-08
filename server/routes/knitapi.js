@@ -134,6 +134,7 @@ router.post('/knit', async (req, res, next) => {
         var floorLightingStatus = req.body.floorLightingStatus ? req.body.floorLightingStatus : '';
         var gasElecAvailability = req.body.gasElecAvailability ? req.body.gasElecAvailability : '';
         var storageAreaStatus = req.body.storageAreaStatus ? req.body.storageAreaStatus : '';
+        var status = req.body.status ? req.body.status : '';
 
         var data = [];
         var headerQuery = "INSERT INTO tmp_knit_line(line_id,knitId,buyer,orderno,style,color,size,woId,knitMachineno,yarnLot,dayProductionKgs,noOfRollsProduced,noOfRollsChecked,knittingSL,machineRPM,oilSystem,yarnTension,needleQuality,sinkerQuality,movingFan,allStopMotion,takeupRollerTension,remarks,createdBy,orgId) values "
@@ -165,6 +166,7 @@ router.post('/knit', async (req, res, next) => {
             var allStopMotion = datalist.allStopMotion ? datalist.allStopMotion : '';
             var takeupRollerTension = datalist.takeupRollerTension ? datalist.takeupRollerTension : '';
             var remarks = datalist.remarks ? datalist.remarks : '';
+
 
 
             bulkInsert =
@@ -204,7 +206,7 @@ router.post('/knit', async (req, res, next) => {
 
         console.log(headerQuery)
 
-        client.executeNonQuery('ppost_knit(?,?,?,?,?,?,?,?,?,?,?)', [id, factory, date, allocatedDay, houseKeepingStatus, floorLightingStatus, gasElecAvailability, storageAreaStatus, headerQuery, loginId, orgId],
+        client.executeNonQuery('ppost_knit(?,?,?,?,?,?,?,?,?,?,?,?)', [id, factory, date, allocatedDay, houseKeepingStatus, floorLightingStatus, gasElecAvailability, storageAreaStatus, status , headerQuery, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -261,32 +263,60 @@ router.get('/knit-filter', (req, res, next) => {
         var id = req.query.id ? req.query.id : 0;
         var factory = req.query.factory ? req.query.factory : '';
         var order = req.query.order ? req.query.order : '';
+        var status = req.query.status ? req.query.status : '';
         var date = req.query.date ? req.query.date : null;
         var orgId = req.decoded.orgId;
 
         Query = `SELECT 
-    kt.id, 
-    kt.factory, 
-    ktl.orderNo,
-    ktl.color,
-    kt.allocatedDay, 
-    DATE_FORMAT(kt.date, '%Y-%m-%d') as date, 
-    ktl.dayProductionKgs as totalDayProductionKgs, 
-    ktl.noOfRollsProduced as totalNoOfRollsProduced, 
-    kt.orgId, 
-    kt.createdAt 
-    FROM 
-        knit kt 
-    INNER JOIN 
-        knit_line ktl ON kt.id = ktl.knitId
-    WHERE 
-        kt.orgId = ${orgId} 
-        AND kt.status = 1 
-        AND kt.delStatus = 0  `
+        ANY_VALUE(kt.id) as id, 
+        ANY_VALUE(kt.factory) as factory, 
+        ANY_VALUE(ktl.orderNo) as orderNo,
+        ANY_VALUE(kt.knitstatus) as status,
+              ANY_VALUE(  (
+                SELECT 
+                    JSON_ARRAYAGG(JSON_OBJECT('color', color))
+                FROM 
+                    (SELECT DISTINCT color 
+                     FROM knit_line 
+                     WHERE knitId = kt.id) AS distinct_colors
+           ) ) AS colors,
+        ANY_VALUE(kt.allocatedDay) as allocatedDay, 
+        ANY_VALUE(DATE_FORMAT(kt.date, '%Y-%m-%d')) as date, 
+        sum(ktl.dayProductionKgs) as totalDayProductionKgs, 
+        sum(ktl.noOfRollsProduced) as totalNoOfRollsProduced
+        FROM 
+            knit kt 
+        INNER JOIN 
+            knit_line ktl ON kt.id = ktl.knitId
+        WHERE 
+            kt.orgId = ${orgId} 
+            AND kt.status = 1 
+            AND kt.delStatus = 0 `
+    
+            if (id != 0) {
+                Query = Query + ` and kt.id = ('${id}')`
+            }
+            if (factory != '') {
+                Query = Query + ` and kt.factory = '${factory}'`
+            }
+            if (date != null) {
+                Query = Query + ` and DATE_FORMAT(kt.date, '%Y-%m-%d') = '${date}'`
+            }
+            if (order != '') {
+                Query = Query + ` and orderNo = ${order} GROUP BY 
+            kt.id,
+            kt.factory, 
+            ktl.orderNo,
+            DATE_FORMAT(kt.date, '%Y-%m-%d');`
+            }
 
-        if (order != '') {
-            Query = Query + ` and orderNo = ${order}`
-        }
+            if (status != '') {
+                Query = Query + ` and kt.knitstatus = '${status}' GROUP BY 
+            kt.id,
+            kt.factory, 
+            ktl.orderNo,
+            DATE_FORMAT(kt.date, '%Y-%m-%d');`
+            }
 
         console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
@@ -301,6 +331,131 @@ router.get('/knit-filter', (req, res, next) => {
                         res.send({
                             success: true,
                             knit: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+router.get('/knitwo-details', (req, res, next) => {
+    try {
+
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        
+        var orgId = req.decoded.orgId;
+
+        Query = `select sum(kl.noOfRollsProduced) as noOfRolls from knit k join knit_line kl on k.id = kl.knitId where k.orgId = 1 and k.status = 1 and k.delStatus = 0`
+ 
+if (id > 0) {
+Query = Query + `;`
+} else {
+if (buyer != '') {
+    Query = Query + ` and buyer IN ('${buyer}')`
+}
+if (orderNo != '') {
+    Query = Query + ` and orderNo IN ('${orderNo}')`
+}
+if (style != '') {
+    Query = Query + ` and style IN ('${style}')`
+}
+if (color != '') {
+    Query = Query + ` and color IN ('${color}')`
+}
+if (size != '') {
+    Query = Query + ` and size IN ('${size}')`
+}
+}
+    
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', knitProduction: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            knitProduction: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/KnitrateId-details', (req, res, next) => {
+    try {
+
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        
+        var orgId = req.decoded.orgId;
+
+        Query = `select sum(knitRate) as knitRate from knitworkorder kw join knitworkorder_line kwl on kw.id = kwl.knitWoId where kw.orgId = 1 and kw.status = 1 and kw.delStatus = 0`
+ 
+if (id > 0) {
+Query = Query + `;`
+} else {
+if (buyer != '') {
+    Query = Query + ` and kw.buyer IN ('${buyer}')`
+}
+if (orderNo != '') {
+    Query = Query + ` and kw.orderNo IN ('${orderNo}')`
+}
+if (style != '') {
+    Query = Query + ` and kwl.style IN ('${style}')`
+}
+if (color != '') {
+    Query = Query + ` and kwl.color IN ('${color}')`
+}
+if (size != '') {
+    Query = Query + ` and kwl.machDia IN ('${size}')`
+}
+}
+    
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', knitRate: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            knitRate: rows.RowDataPacket[0],
                         })
                     }
                 }
