@@ -103,8 +103,6 @@ router.post('/workorder', async (req, res, next) => {
         console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
-        var Buyer = req.body.Buyer
-        var OrderNo = req.body.OrderNo
         var data = [];
         var headerQuery = `INSERT INTO tmp_workorder (poid, polineId, buyer, orderNo, style, color, size, sizeid, fabType, fabricTypeId, fabDia, fabdiaId, fabGsm, fabrGSMId, greigeKg, finishKg, knitSL, spinFty, spinFtyId, knitFty, knitFtyId, dyeinFty, dyeinFtyId, yarnKg, orgId,createdBy, yarnType, yarnTypeId, orderPcs, orderFOBRate, knitRate, dyeRate, fSize, dyetype, dyeTypeId) values `
         var data = req.body.data;
@@ -114,8 +112,8 @@ router.post('/workorder', async (req, res, next) => {
             var id = datalist.id ? datalist.id : 0;
             var poid = datalist.poid;
             var polineId = datalist.polineId;
-            var buyer = Buyer;
-            var orderNo = OrderNo;
+            var buyer = datalist.Buyer;
+            var orderNo = datalist.OrderNo;
             var style = datalist.Style;
             var color = datalist.Color;
             var size = datalist.Size;
@@ -254,14 +252,14 @@ router.get('/workorders-filter', (req, res, next) => {
         var size = req.query.size ? req.query.size : '';
         var orgId = req.decoded.orgId;
 
-        Query = `select ANY_VALUE(id) AS id, buyer, orderNo, round(sum(yarnKg),2) as yarnKg, round(sum(greigeKg),2) as greigeKg, 
+        Query = `select Any_value(id) as id ,buyer, orderNo, sum(fabDia) as fabDia , sum(fabGsm) as fabGsm ,ANY_VALUE(fabType) AS fabType ,round(sum(yarnKg),2) as yarnKg, round(sum(greigeKg),2) as greigeKg, 
                     round(sum(finishKg), 2) as finishKg, sum(orderPcs) as orderPcs, 
                     round(sum(orderPcs * orderFOBRate),2) as orderValue, status
                     from workorder
                     where orgId = ${orgId} and status = 1 and delStatus = 0`
 
         if (id > 0) {
-            Query = Query + ` and id IN (${id}) group by buyer, orderNo, status;`
+            Query = Query + ` and id IN (${id}) group by buyer, orderNo, status ;`
         } else {
             if (buyer != '') {
                 Query = Query + ` and buyer IN ('${buyer}')`
@@ -280,7 +278,7 @@ router.get('/workorders-filter', (req, res, next) => {
             }
         }
 
-        Query = Query + ` group by buyer, orderNo, status;`
+        Query = Query + ` group by buyer, orderNo, status ;`
         console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
@@ -307,6 +305,70 @@ router.get('/workorders-filter', (req, res, next) => {
     }
 });
 
+router.get('/knitworkorderdyeworkorder-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select id , buyer, orderNo, sum(fabDia) as fabDia , sum(fabGsm) as fabGsm ,fabType ,round(sum(yarnKg),2) as yarnKg, round(sum(greigeKg),2) as greigeKg, 
+                    round(sum(finishKg), 2) as finishKg, sum(orderPcs) as orderPcs, 
+                    round(sum(orderPcs * orderFOBRate),2) as orderValue, status
+                    from workorder
+                    where orgId = ${orgId} and status = 1 and delStatus = 0`
+
+        if (id > 0) {
+            Query = Query + ` and id = ${id} group by  id , buyer, orderNo, status , fabType ;`
+        } else {
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and FSize IN ('${size}')`
+            }
+        }
+
+        Query = Query + `  group by  id , buyer, orderNo, status , fabType ;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', workorders: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workorders: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
 
 router.get('/workorders-details-filter', (req, res, next) => {
     try {
@@ -321,7 +383,7 @@ router.get('/workorders-details-filter', (req, res, next) => {
                     greigeKg, finishKg, knitSL, spinFty, knitFty, dyeinFty, yarnKg, status,
                     yarnType, orderPcs, orderFOBRate, knitRate, dyeRate, FSize, poid, polineId, 
                     sizeid, fabricTypeId, fabdiaId, fabrGSMId, spinFtyId, knitFtyId, dyeinFtyId, 
-                    yarnTypeId, dyetype, dyeTypeId from workorder where orgId = ${orgId} and orderNo = ${orderNo}`
+                    yarnTypeId, dyetype, dyeTypeId from workorder where orgId = ${orgId} and orderNo = ${orderNo} and delStatus = 0 and status = 1`
 
         if (id > 0) {
             Query = Query + ` and id IN (${id})`

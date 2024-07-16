@@ -158,7 +158,7 @@ router.get('/colors-sizes', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', sizes: [] });
                     }
                     else {
-                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                        res.send({ success: true, sizes: rows.RowDataPacket[1], gsize : rows.RowDataPacket[0] })
                     }
                 }
                 catch (err) {
@@ -808,6 +808,1013 @@ router.get('/knitentry_wosize', (req, res, next) => {
         next(err)
     }
 });
+
+
+//--------------------------------------cutting [Start]-------------------------------------------
+
+router.get('/cut_buyers', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_cut_buyers(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyers: [] });
+                    }
+                    else {
+                        res.send({ success: true, buyers: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/cut_buyers-orders', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_cut_buyers_orders(?,?)', [buyer, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', orders: [] });
+                    }
+                    else {
+                        res.send({ success: true, orders: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/cut_orders-styles', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_cut_orders_styles(?,?,?)', [buyer, orderNo, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styles: [] });
+                    }
+                    else {
+                        res.send({ success: true, styles: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/cut_styles-colors', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_cut_styles_colors(?,?,?,?)', [buyer, orderNo, style, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', colors: [] });
+                    }
+                    else {
+                        res.send({ success: true, colors: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/cut_colors-sizes', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var color = req.query.color;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_cut_colors_sizes(?,?,?,?,?)', [buyer, orderNo, style, color, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sizes: [] });
+                    }
+                    else {
+                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/cutting-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select * from cutting
+                    where orgId = ${orgId} and status = 1 and delStatus = 0`
+
+
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and size IN ('${size}')`
+            }
+        
+
+        // Query = Query + ` group by buyer, orderNo, status;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', cutting: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            cutting: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+//--------------------------------------cutting [End]-------------------------------------------
+//--------------------------------------sewinput [Start]-------------------------------------------
+
+router.get('/sewinput_buyers', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_sewinput_buyers(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyers: [] });
+                    }
+                    else {
+                        res.send({ success: true, buyers: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewinput_buyers-orders', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_sewinput_buyers_orders(?,?)', [buyer, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', orders: [] });
+                    }
+                    else {
+                        res.send({ success: true, orders: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/sewinput_orders-styles', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_sewinput_orders_styles(?,?,?)', [buyer, orderNo, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styles: [] });
+                    }
+                    else {
+                        res.send({ success: true, styles: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/sewinput_styles-colors', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_sewinput_styles_colors(?,?,?,?)', [buyer, orderNo, style, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', colors: [] });
+                    }
+                    else {
+                        res.send({ success: true, colors: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewinput_colors-sizes', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var color = req.query.color;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_sewinput_colors_sizes(?,?,?,?,?)', [buyer, orderNo, style, color, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sizes: [] });
+                    }
+                    else {
+                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewinput-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select * from sewing_input
+                    where orgId = ${orgId} and status = 1 and delStatus = 0`
+
+
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and size IN ('${size}')`
+            }
+        
+
+        // Query = Query + ` group by buyer, orderNo, status;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sewinginput: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            sewinginput: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+//--------------------------------------sewinput [End]-------------------------------------------
+
+//--------------------------------------sewOutput [Start]-------------------------------------------
+
+router.get('/sewoutput_buyers', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_output_buyers(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyers: [] });
+                    }
+                    else {
+                        res.send({ success: true, buyers: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewoutput_buyers-orders', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_output_buyers_orders(?,?)', [buyer, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', orders: [] });
+                    }
+                    else {
+                        res.send({ success: true, orders: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/sewoutput_orders-styles', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_output_orders_styles(?,?,?)', [buyer, orderNo, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styles: [] });
+                    }
+                    else {
+                        res.send({ success: true, styles: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/sewoutput_styles-colors', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_output_styles_colors(?,?,?,?)', [buyer, orderNo, style, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', colors: [] });
+                    }
+                    else {
+                        res.send({ success: true, colors: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewoutput_colors-sizes', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var color = req.query.color;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_output_colors_sizes(?,?,?,?,?)', [buyer, orderNo, style, color, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sizes: [] });
+                    }
+                    else {
+                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/sewoutput-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select * from sewing_output
+                    where orgId = ${orgId} and status = 1 and delStatus = 0`
+
+
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and size IN ('${size}')`
+            }
+        
+
+        // Query = Query + ` group by buyer, orderNo, status;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sewingoutput: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            sewingoutput: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+//--------------------------------------sewOutput [End]-------------------------------------------
+//--------------------------------------Sewing Packing  [Start]-------------------------------------------
+
+router.get('/packing_buyers', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_packing_buyers(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyers: [] });
+                    }
+                    else {
+                        res.send({ success: true, buyers: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/packing_buyers-orders', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_packing_buyers_orders(?,?)', [buyer, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', orders: [] });
+                    }
+                    else {
+                        res.send({ success: true, orders: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/packing_orders-styles', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_packing_orders_styles(?,?,?)', [buyer, orderNo, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styles: [] });
+                    }
+                    else {
+                        res.send({ success: true, styles: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/packing_styles-colors', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_packing_styles_colors(?,?,?,?)', [buyer, orderNo, style, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', colors: [] });
+                    }
+                    else {
+                        res.send({ success: true, colors: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/packing_colors-sizes', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var color = req.query.color;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_packing_colors_sizes(?,?,?,?,?)', [buyer, orderNo, style, color, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sizes: [] });
+                    }
+                    else {
+                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/packing-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select * from sewing_packing
+                    where orgId = ${orgId} and status = 1 and delStatus = 0`
+
+
+            if (buyer != '') {
+                Query = Query + ` and buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and size IN ('${size}')`
+            }
+        
+
+        // Query = Query + ` group by buyer, orderNo, status;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sewingpacking: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            sewingpacking: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+//--------------------------------------Sewing Packing [End]-------------------------------------------
+
+//--------------------------------------Shipment  [start]-------------------------------------------
+
+router.get('/shipping_buyers', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pgetall_shipping_buyers(?)', [orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyers: [] });
+                    }
+                    else {
+                        res.send({ success: true, buyers: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/shipping_buyers-orders', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_shipping_buyers_orders(?,?)', [buyer, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', orders: [] });
+                    }
+                    else {
+                        res.send({ success: true, orders: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/shipping_orders-styles', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_shipping_orders_styles(?,?,?)', [buyer, orderNo, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styles: [] });
+                    }
+                    else {
+                        res.send({ success: true, styles: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/shipping_styles-colors', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_shipping_styles_colors(?,?,?,?)', [buyer, orderNo, style, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', colors: [] });
+                    }
+                    else {
+                        res.send({ success: true, colors: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/shipping_colors-sizes', (req, res, next) => {
+    try {
+
+        var buyer = req.query.buyer;
+        var orderNo = req.query.orderNo;
+        var style = req.query.style;
+        var color = req.query.color;
+        var orgId = req.decoded.orgId;
+        client.executeStoredProcedure('pget_shipping_colors_sizes(?,?,?,?,?)', [buyer, orderNo, style, color, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', sizes: [] });
+                    }
+                    else {
+                        res.send({ success: true, sizes: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/shipping-filter', (req, res, next) => {
+    try {
+        var id = req.query.id ? req.query.id : 0;
+        var buyer = req.query.buyer ? req.query.buyer : '';
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var style = req.query.style ? req.query.style : '';
+        var color = req.query.color ? req.query.color : '';
+        var size = req.query.size ? req.query.size : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `select ih.id, ih.buyer, ih.orderNo, ih.shipDate, ih.notes, ih.totalOrderPcs, ih.totalshipPcs, ih.totalPending, ih.totalcarton, 
+                ih.orgId, ih.status, ih.delStatus , il.id, il.headId, il.fabtype, il.fabGSM, il.style, il.color, il.size, il.woId, il.cutId, il.inputId, il.outputId, 
+                il.packId, il.orderPcs, il.shipPcs, il.pending, il.carton, il.remarks
+                from sewing_shipping_head ih join sewing_shipping_line il on ih.id = headId
+                where ih.orgId = ${orgId} and ih.status = 1 and ih.delStatus = 0`
+
+
+            if (buyer != '') {
+                Query = Query + ` and ih.buyer IN ('${buyer}')`
+            }
+            if (orderNo != '') {
+                Query = Query + ` and ih.orderNo IN ('${orderNo}')`
+            }
+            if (style != '') {
+                Query = Query + ` and il.style IN ('${style}')`
+            }
+            if (color != '') {
+                Query = Query + ` and il.color IN ('${color}')`
+            }
+            if (size != '') {
+                Query = Query + ` and il.size IN ('${size}')`
+            }
+        
+
+        // Query = Query + ` group by buyer, orderNo, status;`
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', shipping: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            shipping: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+//--------------------------------------Shipment  [End]-------------------------------------------
 
 
 module.exports = router;

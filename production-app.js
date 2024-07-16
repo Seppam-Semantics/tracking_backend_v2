@@ -104,6 +104,8 @@ const dyedeliveryapi = require('./server/routes/dyedelivery');
 
 const mastersapi = require('./server/routes/mastersapi');
 
+const garmentsapi = require('./server/routes/garmentsapi');
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
@@ -137,6 +139,8 @@ app.use('/knittodye', JWTauthorization, knittodye);
 app.use('/dyedeliveryapi', JWTauthorization, dyedeliveryapi);
 
 app.use('/mastersapi', JWTauthorization, mastersapi);
+
+app.use('/garmentsapi', JWTauthorization, garmentsapi);
 
 const port = process.env.PORT;
 app.set('port', port);

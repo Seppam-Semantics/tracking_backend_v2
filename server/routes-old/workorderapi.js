@@ -103,8 +103,6 @@ router.post('/workorder', async (req, res, next) => {
         console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
-        var Buyer = req.body.Buyer
-        var OrderNo = req.body.OrderNo
         var data = [];
         var headerQuery = `INSERT INTO tmp_workorder (poid, polineId, buyer, orderNo, style, color, size, sizeid, fabType, fabricTypeId, fabDia, fabdiaId, fabGsm, fabrGSMId, greigeKg, finishKg, knitSL, spinFty, spinFtyId, knitFty, knitFtyId, dyeinFty, dyeinFtyId, yarnKg, orgId,createdBy, yarnType, yarnTypeId, orderPcs, orderFOBRate, knitRate, dyeRate, fSize, dyetype, dyeTypeId) values `
         var data = req.body.data;
@@ -114,8 +112,8 @@ router.post('/workorder', async (req, res, next) => {
             var id = datalist.id ? datalist.id : 0;
             var poid = datalist.poid;
             var polineId = datalist.polineId;
-            var buyer = Buyer;
-            var orderNo = OrderNo;
+            var buyer = datalist.Buyer;
+            var orderNo = datalist.OrderNo;
             var style = datalist.Style;
             var color = datalist.Color;
             var size = datalist.Size;
@@ -321,7 +319,7 @@ router.get('/workorders-details-filter', (req, res, next) => {
                     greigeKg, finishKg, knitSL, spinFty, knitFty, dyeinFty, yarnKg, status,
                     yarnType, orderPcs, orderFOBRate, knitRate, dyeRate, FSize, poid, polineId, 
                     sizeid, fabricTypeId, fabdiaId, fabrGSMId, spinFtyId, knitFtyId, dyeinFtyId, 
-                    yarnTypeId, dyetype, dyeTypeId from workorder where orgId = ${orgId} and orderNo = ${orderNo}`
+                    yarnTypeId, dyetype, dyeTypeId from workorder where orgId = ${orgId} and orderNo = ${orderNo} and delStatus = 0 and status = 1`
 
         if (id > 0) {
             Query = Query + ` and id IN (${id})`
@@ -862,10 +860,10 @@ router.get('/yarn_type_BO', (req, res, next) => {
 router.get('/RejTypeLoss_BO', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        var color = req.query.color ? req.query.color : ''
+        var colorid = req.query.color ? req.query.color : ''
 
         Query = `select round(sum(losses),2) as losses from rej_type_master_line rtml left join rej_type_master rtm on rtm.id = rtml.rejTypeId 
-        WHERE rtml.colorId = ${color} and rtm.delStatus = 0 and rtm.status = 1;`
+        WHERE rtml.colorId = ${colorid} and rtm.delStatus = 0 and rtm.status = 1;`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {
@@ -934,7 +932,7 @@ router.get('/ColorLoss_BO', (req, res, next) => {
         var color = req.query.color;
 
 
-        Query = `select sum(dye_process_loss)  as DyeProcessLoss from colors where id ='{color}';`
+        Query = `select sum(dye_process_loss)  as DyeProcessLoss from colors where id = '${color}' ;`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {

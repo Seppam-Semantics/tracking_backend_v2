@@ -643,10 +643,10 @@ router.get('/DF-Inventory', (req, res, next) => {
 
 router.get('/dyeworkorder_Fty_Fillter', (req, res, next) => {
     try {
-        var buyer = req.query.buyer?req.query.buyer:''
+        var dyefty = req.query.dyefty?req.query.dyefty:''
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pgetall_dyeWo_fty_filter(?)', [orgId],
+        client.executeStoredProcedure('pgetall_dyeWo_fty_filter(?,?)', [dyefty,orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -654,8 +654,7 @@ router.get('/dyeworkorder_Fty_Fillter', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true,  buyer: rows.RowDataPacket[0]
-                        })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] , buyer: rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -671,10 +670,11 @@ router.get('/dyeworkorder_Fty_Fillter', (req, res, next) => {
 
 router.get('/dyeworkorder_buyer_Fillter', (req, res, next) => {
     try {
-        var order = req.query.order?req.query.order:''
+        var dyefty = req.query.dyefty?req.query.dyefty:''
+        var buyer = req.query.buyer?req.query.buyer:''
         var orgId = req.decoded.orgId;
 
-        client.executeStoredProcedure('pgetall_dyeWo_buyer_filter(?)', [orgId],
+        client.executeStoredProcedure('pgetall_dyeWo_buyer_filter(?,?,?)', [buyer,dyefty,orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -682,8 +682,7 @@ router.get('/dyeworkorder_buyer_Fillter', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true, orderNo : rows.RowDataPacket[0]
-                        })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] , orderNo: rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -695,6 +694,7 @@ router.get('/dyeworkorder_buyer_Fillter', (req, res, next) => {
         next(err)
     }
 });
+
 
 router.post('/dyeworkorder', async (req, res, next) => {
     try {
@@ -791,45 +791,8 @@ router.post('/dyeworkorder', async (req, res, next) => {
 router.get('/dyeworkorder', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
-        var buyer = req.query.buyer?req.query.buyer:''
-        var order = req.query.order?req.query.order:''
 
-        Query = `SELECT 
-                   kt.id, 
-                   kt.dyefty, 
-                   kt.dyefty_details, 
-                   kt.buyer,
-                   kt.orderNo,
-                   kt.woNo,
-                   kt.woRefNo,
-                   DATE_FORMAT(kt.woDate, '%Y-%m-%d') as woDate, 
-                   DATE_FORMAT(kt.completedDate, '%Y-%m-%d') as completedDate, 
-                   kt.notes,
-                   kt.orgId, 
-                   kt.createdAt ,
-                   sum(dl.greigeKg) as dyeKgs , 
-                   sum(dl.dyeValue) as dyeValue ,
-	               ANY_VALUE(( SELECT JSON_ARRAYAGG(JSON_OBJECT('color', color)) FROM (SELECT DISTINCT color FROM dyeworkorder_line WHERE dyeWoId = kt.id) AS distinct_colors ) ) AS colors
-                FROM 
-                   dyeworkorder kt 
-                JOIN 
-                    dyeworkorder_line dl on kt.id = dl.dyeWoId
-
-                WHERE 
-                    kt.orgId = ${orgId}
-                    AND kt.status = 1 
-                    AND kt.delStatus = 0 `
-
-                    if (buyer != '') {
-                        Query = Query + ` and kt.buyer IN ('${buyer}')`
-                    }
-                    if (order != '') {
-                        Query = Query + ` and kt.orderNo IN ('${order}')`
-                    }
-
-                Query = Query + ` GROUP BY  kt.id ;`
-
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
+        client.executeStoredProcedure('pgetall_dyeworkorder(?)', [orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -837,8 +800,7 @@ router.get('/dyeworkorder', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', workorders: [] });
                     }
                     else {
-                        res.send({ success: true, workorders: rows.RowDataPacket[0] 
-                         })
+                        res.send({ success: true, workorders: rows.RowDataPacket[0] })
                     }
                 }
                 catch (err) {
@@ -850,70 +812,6 @@ router.get('/dyeworkorder', (req, res, next) => {
         next(err)
     }
 });
-
-
-router.get('/dyeworkorderTotal', (req, res, next) => {
-    try {
-        var orgId = req.decoded.orgId;
-        var buyer = req.query.buyer?req.query.buyer:''
-        var order = req.query.order?req.query.order:''
-        
-        Query = `select sum(dyeKgs) as dyeKgs from ( SELECT 
-                   kt.id, 
-                   kt.dyefty, 
-                   kt.dyefty_details, 
-                   kt.buyer,
-                   kt.orderNo,
-                   kt.woNo,
-                   kt.woRefNo,
-                   DATE_FORMAT(kt.woDate, '%Y-%m-%d') as woDate, 
-                   DATE_FORMAT(kt.completedDate, '%Y-%m-%d') as completedDate, 
-                   kt.notes,
-                   kt.orgId, 
-                   kt.createdAt ,
-                   sum(dl.greigeKg) as dyeKgs , 
-                   sum(dl.dyeValue) as dyeValue ,
-	               ANY_VALUE(( SELECT JSON_ARRAYAGG(JSON_OBJECT('color', color)) FROM (SELECT DISTINCT color FROM dyeworkorder_line WHERE dyeWoId = kt.id) AS distinct_colors ) ) AS colors
-                FROM 
-                   dyeworkorder kt 
-                JOIN 
-                    dyeworkorder_line dl on kt.id = dl.dyeWoId
-
-                WHERE 
-                    kt.orgId = ${orgId}
-                    AND kt.status = 1 
-                    AND kt.delStatus = 0
-                GROUP BY  kt.id ) as Qurey `
-
-                if (buyer != '') {
-                    Query = Query + ` where buyer IN ('${buyer}')`
-                }
-                if (order != '') {
-                    Query = Query + ` where orderNo IN ('${order}')`
-                }
-
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
-            req, res, next, function (result) {
-                try {
-                    rows = result;
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', workorders: [] });
-                    }
-                    else {
-                        res.send({ success: true, workorders: rows.RowDataPacket[0] 
-                         })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
 
 router.get('/dyeworkorder/:id', (req, res, next) => {
     try {
