@@ -268,53 +268,29 @@ router.get('/knit-filter', (req, res, next) => {
         var color = req.query.color ? req.query.color : '';
         var orgId = req.decoded.orgId;
 
-        Query = `select * from (
-                    SELECT
-                            kt.id, 
-                            kt.code, 
-                            kt.factory, 
-                            ktl.orderNo,
-                            ANY_VALUE(kt.knitstatus) as status,
-                            (
-                                SELECT 
-                                    JSON_ARRAYAGG(JSON_OBJECT('color', color))
-                                FROM 
-                                    (SELECT DISTINCT color 
-                                    FROM knit_line 
-                                    WHERE knitId = kt.id) AS distinct_colors
-                            ) AS colors,
-                            kt.allocatedDay, 
-                            DATE_FORMAT(kt.date, '%Y-%m-%d') AS date, 
-                            SUM(ktl.dayProductionKgs) AS totalDayProductionKgs, 
-                            SUM(ktl.noOfRollsProduced) AS totalNoOfRollsProduced
-                        FROM 
-                            knit kt 
-                        INNER JOIN 
-                            knit_line ktl ON kt.id = ktl.knitId
-                        WHERE 
-                            kt.orgId = 1
-                            AND kt.status = 1 
-                            AND kt.delStatus = 0 
-                            GROUP BY 
-                                    kt.id, 
-                                    kt.code, 
-                                    kt.factory, 
-                                    ktl.orderNo,
-                                    kt.allocatedDay, 
-                                    DATE_FORMAT(kt.date, '%Y-%m-%d')
-                            ) as knitproduction   `
-    
-            if (order != '') {
-                Query = Query + ` where orderNo = ${order} ;`
-            }
+        Query = `SELECT 
+    kt.id, 
+    kt.factory, 
+    ktl.orderNo,
+    ktl.color,
+    kt.allocatedDay, 
+    DATE_FORMAT(kt.date, '%Y-%m-%d') as date, 
+    ktl.dayProductionKgs as totalDayProductionKgs, 
+    ktl.noOfRollsProduced as totalNoOfRollsProduced, 
+    kt.orgId, 
+    kt.createdAt 
+    FROM 
+        knit kt 
+    INNER JOIN 
+        knit_line ktl ON kt.id = ktl.knitId
+    WHERE 
+        kt.orgId = ${orgId} 
+        AND kt.status = 1 
+        AND kt.delStatus = 0  `
 
-            if (status != '') {
-                Query = Query + ` where status = '${status}';`
-            }
-
-            if (color != '') {
-                Query = Query + ` where  JSON_CONTAINS(colors, JSON_OBJECT('color','${color}'));`
-            }
+        if (order != '') {
+            Query = Query + ` and orderNo = ${order}`
+        }
 
         console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
@@ -329,254 +305,6 @@ router.get('/knit-filter', (req, res, next) => {
                         res.send({
                             success: true,
                             knit: rows.RowDataPacket[0],
-                        })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-router.get('/knit_Total_filter', (req, res, next) => {
-    try {
-
-        var id = req.query.id ? req.query.id : 0;
-        var factory = req.query.factory ? req.query.factory : '';
-        var order = req.query.order ? req.query.order : '';
-        var status = req.query.status ? req.query.status : '';
-        var color = req.query.color ? req.query.color : '';
-        var date = req.query.date ? req.query.date : null;
-        var orgId = req.decoded.orgId;
-
-        Query = `select sum(totalDayProductionKgs) as totalDayProductionKgs from (
-                    SELECT
-                            kt.id, 
-                            kt.code, 
-                            kt.factory, 
-                            ktl.orderNo,
-                            ANY_VALUE(kt.knitstatus) as status,
-                            (
-                                SELECT 
-                                    JSON_ARRAYAGG(JSON_OBJECT('color', color))
-                                FROM 
-                                    (SELECT DISTINCT color 
-                                    FROM knit_line 
-                                    WHERE knitId = kt.id) AS distinct_colors
-                            ) AS colors,
-                            kt.allocatedDay, 
-                            DATE_FORMAT(kt.date, '%Y-%m-%d') AS date, 
-                            SUM(ktl.dayProductionKgs) AS totalDayProductionKgs, 
-                            SUM(ktl.noOfRollsProduced) AS totalNoOfRollsProduced
-                        FROM 
-                            knit kt 
-                        INNER JOIN 
-                            knit_line ktl ON kt.id = ktl.knitId
-                        WHERE 
-                            kt.orgId = 1
-                            AND kt.status = 1 
-                            AND kt.delStatus = 0 
-                            GROUP BY 
-                                    kt.id, 
-                                    kt.code, 
-                                    kt.factory, 
-                                    ktl.orderNo,
-                                    kt.allocatedDay, 
-                                    DATE_FORMAT(kt.date, '%Y-%m-%d')
-                            ) as knitproduction   `
-    
-            if (order != '') {
-                Query = Query + ` where orderNo = ${order} ;`
-            }
-
-            if (status != '') {
-                Query = Query + ` where status = '${status}';`
-            }
-
-            if (color != '') {
-                Query = Query + ` where  JSON_CONTAINS(colors, JSON_OBJECT('color','${color}'));`
-            }
-
-        console.log(Query);
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
-            req, res, next, async function (result) {
-                try {
-                    rows = result;
-                    //console.log(rows.RowDataPacket);
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', workorder: [] });
-                    }
-                    else {
-                        res.send({
-                            success: true,
-                            knitTotal: rows.RowDataPacket[0],
-                        })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-
-router.get('/knit_color_list', (req, res, next) => {
-    try {
-
-        var id = req.query.id ? req.query.id : 0;
-        var factory = req.query.factory ? req.query.factory : '';
-        var order = req.query.order ? req.query.order : '';
-        var status = req.query.status ? req.query.status : '';
-        var date = req.query.date ? req.query.date : null;
-        var orgId = req.decoded.orgId;
-
-        Query = `SELECT DISTINCT color FROM knit_line where orgId = 1 AND status = 1  AND delStatus = 0 `
-    
-        console.log(Query);
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
-            req, res, next, async function (result) {
-                try {
-                    rows = result;
-                    //console.log(rows.RowDataPacket);
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', color: [] });
-                    }
-                    else {
-                        res.send({
-                            success: true,
-                            color: rows.RowDataPacket[0],
-                        })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-
-router.get('/knitwo-details', (req, res, next) => {
-    try {
-
-        var id = req.query.id ? req.query.id : 0;
-        var buyer = req.query.buyer ? req.query.buyer : '';
-        var orderNo = req.query.orderNo ? req.query.orderNo : '';
-        var style = req.query.style ? req.query.style : '';
-        var color = req.query.color ? req.query.color : '';
-        var size = req.query.size ? req.query.size : '';
-        
-        var orgId = req.decoded.orgId;
-
-        Query = `select sum(kl.noOfRollsProduced) as noOfRolls from knit k join knit_line kl on k.id = kl.knitId where k.orgId = 1 and k.status = 1 and k.delStatus = 0`
- 
-if (id > 0) {
-Query = Query + `;`
-} else {
-if (buyer != '') {
-    Query = Query + ` and buyer IN ('${buyer}')`
-}
-if (orderNo != '') {
-    Query = Query + ` and orderNo IN ('${orderNo}')`
-}
-if (style != '') {
-    Query = Query + ` and style IN ('${style}')`
-}
-if (color != '') {
-    Query = Query + ` and color IN ('${color}')`
-}
-if (size != '') {
-    Query = Query + ` and size IN ('${size}')`
-}
-}
-    
-
-        console.log(Query);
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
-            req, res, next, async function (result) {
-                try {
-                    rows = result;
-                    //console.log(rows.RowDataPacket);
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', knitProduction: [] });
-                    }
-                    else {
-                        res.send({
-                            success: true,
-                            knitProduction: rows.RowDataPacket[0],
-                        })
-                    }
-                }
-                catch (err) {
-                    next(err)
-                }
-            });
-    }
-    catch (err) {
-        next(err)
-    }
-});
-
-
-router.get('/KnitrateId-details', (req, res, next) => {
-    try {
-
-        var id = req.query.id ? req.query.id : 0;
-        var buyer = req.query.buyer ? req.query.buyer : '';
-        var orderNo = req.query.orderNo ? req.query.orderNo : '';
-        var style = req.query.style ? req.query.style : '';
-        var color = req.query.color ? req.query.color : '';
-        var size = req.query.size ? req.query.size : '';
-        
-        var orgId = req.decoded.orgId;
-
-        Query = `select sum(knitRate) as knitRate from knitworkorder kw join knitworkorder_line kwl on kw.id = kwl.knitWoId where kw.orgId = 1 and kw.status = 1 and kw.delStatus = 0`
- 
-if (id > 0) {
-Query = Query + `;`
-} else {
-if (buyer != '') {
-    Query = Query + ` and kw.buyer IN ('${buyer}')`
-}
-if (orderNo != '') {
-    Query = Query + ` and kw.orderNo IN ('${orderNo}')`
-}
-if (style != '') {
-    Query = Query + ` and kwl.style IN ('${style}')`
-}
-if (color != '') {
-    Query = Query + ` and kwl.color IN ('${color}')`
-}
-if (size != '') {
-    Query = Query + ` and kwl.machDia IN ('${size}')`
-}
-}
-    
-
-        console.log(Query);
-        client.executeStoredProcedure('pquery_execution(?)', [Query],
-            req, res, next, async function (result) {
-                try {
-                    rows = result;
-                    //console.log(rows.RowDataPacket);
-                    if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', knitRate: [] });
-                    }
-                    else {
-                        res.send({
-                            success: true,
-                            knitRate: rows.RowDataPacket[0],
                         })
                     }
                 }
