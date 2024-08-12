@@ -501,6 +501,38 @@ router.get('/drop-color-Master', (req, res, next) => {
     }
 });
 
+router.get('/drop-color-Master1', (req, res, next) => {
+    try {
+
+        var orgId = req.decoded.orgId;
+        var buyer = req.query.buyer;
+
+        Query = `select * from colors where orgId = ${orgId}  and status = 1 and delStatus = 0 and buyer = '${buyer}'`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    //console.log(rows.RowDataPacket);
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', buyer: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            color: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 router.get('/drop-colorId-Master', (req, res, next) => {
     try {

@@ -103,6 +103,8 @@ router.post('/workorder', async (req, res, next) => {
         // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
+        var Buyer = req.body.Buyer;
+        var OrderNo = req.body.OrderNo;
         var data = [];
         var headerQuery = `INSERT INTO tmp_workorder (poid, polineId, buyer, orderNo, style, color, size, sizeid, fabType, fabricTypeId, fabDia, fabdiaId, fabGsm, fabrGSMId, greigeKg, finishKg, knitSL, spinFty, spinFtyId, knitFty, knitFtyId, dyeinFty, dyeinFtyId, yarnKg, orgId,createdBy, yarnType, yarnTypeId, orderPcs, orderFOBRate, knitRate, dyeRate, fSize, dyetype, dyeTypeId) values `
         var data = req.body.data;
@@ -112,8 +114,8 @@ router.post('/workorder', async (req, res, next) => {
             var id = datalist.id ? datalist.id : 0;
             var poid = datalist.poid;
             var polineId = datalist.polineId;
-            var buyer = datalist.Buyer;
-            var orderNo = datalist.OrderNo;
+            var buyer = Buyer;
+            var orderNo = OrderNo;
             var style = datalist.Style;
             var color = datalist.Color;
             var size = datalist.Size;
@@ -194,7 +196,7 @@ router.post('/workorder', async (req, res, next) => {
             i = i + 1;
         }
 
-        // console.log(headerQuery)
+        console.log(headerQuery)
 
         client.executeNonQuery('ppost_workorder(?,?,?,?)', [id, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -606,7 +608,7 @@ router.get('/Fsize_Gsize_BO', (req, res, next) => {
         // console.log(style)
         // console.log(fsize)
 
-        Query = `SELECT distinct size FROM fsize_master WHERE orgId = ${orgId} and style = '${style}' and concatSize = '${fsize}';`
+        Query = `SELECT id, size FROM fsize_master WHERE orgId = ${orgId} and style = '${style}' and concatSize = '${fsize}';`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {
@@ -786,7 +788,7 @@ router.get('/Spin_Fty_BO', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
 
-        Query = `select distinct SpinFtyName , id from Spin_Fty_master where orgId = ${orgId};`
+        Query = `select SpinFtyName , id from Spin_Fty_master where orgId = ${orgId};`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {
