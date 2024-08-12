@@ -8,7 +8,7 @@
     "build": "ncc build production-app.js -o dist",
     "start": "nodemon production-app.js"
   },
-  "author": "lentera technologies pvt ltd..",
+  "author": "SEPPAM SEMANTICS PRIVATE LIMITED",
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.461.0",

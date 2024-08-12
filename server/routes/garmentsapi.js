@@ -1500,4 +1500,402 @@ router.post('/sewing-invoice', (req, res, next) => {
     }
 });
 
+// ================================== Line Allocation ====================================================================================================================
+
+router.get('/lineallocation-shipDate', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var buyer = req.query.buyer?req.query.buyer:'';
+        var orderNo = req.query.orderNo?req.query.orderNo:'';
+
+        Query = `select  date_format(shipDate, '%Y-%m-%d') as shipDate from po_master where buyer = '${buyer}' and  orderNo = '${orderNo}' and  orgId = ${orgId} and delStatus = 0;`
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', shipDate: [] });
+                    }
+                    else {
+                        res.send({ success: true, shipDate: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/lineallocation-OrderPcs', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var buyer = req.query.buyer?req.query.buyer:'';
+        var orderNo = req.query.orderNo?req.query.orderNo:'';
+        var style = req.query.style?req.query.style:'';
+        var color = req.query.color?req.query.color:'';
+
+        Query = `select sum(quantity) as quantity from po_master_line pl left join  po_master p on p.id = pl.orderId where 
+                 p.buyer = '${buyer}' and  pl.orderNo = '${orderNo}' and pl.style = '${style}' and pl.color = '${color}' and  p.orgId = ${orgId} and p.delStatus = 0;`
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', OrderPcs: [] });
+                    }
+                    else {
+                        res.send({ success: true, OrderPcs: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/lineallocation-line', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var buyer = req.query.buyer?req.query.buyer:'';
+        var orderNo = req.query.orderNo?req.query.orderNo:'';
+        var style = req.query.style?req.query.style:'';
+        var color = req.query.color?req.query.color:'';
+
+        Query = `SELECT * FROM linemachinelist l left join linemachinelist_line lm on l.id = lm.headid where style ='${style}'; `
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, data: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/lineallocation-filter-line', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct line FROM line_allocation where delStatus = 0 and status = 1; `
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, data: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.post('/line_allocation', (req, res, next) => {
+    try {
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        var id = req.body.id;
+        var data = [];
+        var headerQuery = `INSERT INTO tmp_line_allocation
+        (line_id,buyer, orderNo, style, color,poshipdate ,
+        fridate ,orderpcs ,planqty ,line , startDate, 
+        daysrequired, endDate,seqId,oldId,createdBy,orgId) values`
+        var data = req.body.data;
+        var i = 0;
+        for (let datalist of data) {
+
+            var line_id = datalist.id ? datalist.id : 0;
+            var buyer = datalist.buyer?datalist.buyer:'';
+            var orderno = datalist.orderno?datalist.orderno:'';
+            var style = datalist.style?datalist.style:'';
+            var color = datalist.color?datalist.color:'';
+            var shipdate = datalist.shipdate;
+            var fridate = datalist.fridate?datalist.fridate:'';
+            var orderpcs = datalist.orderpcs?datalist.orderpcs:'';
+            var planqty = datalist.planqty?datalist.planqty:'';
+            var line = datalist.line?datalist.line:'';
+            var startdate = datalist.startdate?datalist.startdate:'';
+            var daysreqd = datalist.daysreqd?datalist.daysreqd:'';
+            var enddate = datalist.enddate?datalist.enddate:'';
+            var seqId = datalist.seqId;
+            var oldid = datalist.oldid;
+
+            bulkInsert =
+              `(${db.escape(line_id)},
+              ${db.escape(buyer)},
+              ${db.escape(orderno)},
+              ${db.escape(style)},
+              ${db.escape(color)},
+              ${db.escape(shipdate)},
+              ${db.escape(fridate)},
+              ${db.escape(orderpcs)},
+              ${db.escape(planqty)},
+              ${db.escape(line)},
+              ${db.escape(startdate)},
+              ${db.escape(daysreqd)},
+              ${db.escape(enddate)},
+              ${db.escape(seqId)},
+              ${db.escape(oldid)},
+              ${db.escape(loginId)},
+              ${db.escape(orgId)}
+              )`;
+
+            if (i == (data.length - 1)) {
+                headerQuery = headerQuery + bulkInsert + ';'
+            } else {
+                headerQuery = headerQuery + bulkInsert + ','
+            }
+            i = i + 1;
+        }
+
+        console.log(headerQuery)
+
+        client.executeNonQuery('ppost_line_allocation(?,?, ?,?)', [id, headerQuery, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.success == false) {
+                        res.json({ success: false, message: 'something went worng' });
+                    } else {
+                        if (line_id == 0) {
+                            res.json({ success: true, message: 'added successfully' });
+                        } else {
+                            res.json({ success: true, message: 'updated successfully' });
+                        }
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/line_allocation', (req, res, next) => {
+    try {
+        var knitFty = req.query.knitFty;
+        var machineDia = req.query.machineDia;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT id, buyer, orderNo, style, color, date_format(poshipdate, '%Y-%m-%d') as poshipdate , date_format(fridate, '%Y-%m-%d') as fridate, 
+                orderpcs, planqty, line, date_format(startDate, '%Y-%m-%d') as startDate, daysrequired, date_format(endDate, '%Y-%m-%d') as endDate, 
+                seqId, oldId FROM line_allocation order by seqId;`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/lineallocation-statDate', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var buyer = req.query.buyer?req.query.buyer:'';
+        var orderNo = req.query.orderNo?req.query.orderNo:'';
+        var style = req.query.style?req.query.style:'';
+        var color = req.query.color?req.query.color:'';
+
+        Query = `SELECT date_format(MAX(endDate), "%Y-%m-%d") endDate from line_allocation where orgId = 1 
+                and delStatus = 0 and Status = 1 
+                and buyer = '${buyer}' and orderNo = '${orderNo}' and style = '${style}' and color = '${color}';`
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, date: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/lineallocation-prodhr', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var line = req.query.line?req.query.line:'';
+        var style = req.query.style?req.query.style:'';
+
+        Query = `SELECT 
+    (SELECT JSON_ARRAYAGG(JSON_OBJECT('line', line)) 
+     FROM (SELECT DISTINCT line FROM linemachinelist_line  
+     WHERE headid = lm.id) AS distinct_line) AS line, 
+    style, 
+    prodhr 
+FROM 
+    linemachinelist AS lm 
+WHERE 
+    JSON_CONTAINS(
+        (SELECT JSON_ARRAYAGG(JSON_OBJECT('line', line)) 
+         FROM 
+            (SELECT DISTINCT line 
+             FROM linemachinelist_line 
+             WHERE headid = lm.id) 
+         AS distinct_line), 
+        JSON_OBJECT('line', '${line}')
+    )
+    And 
+        lm.style = '${style}';
+`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, data: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/lineallocation-workhrs', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        var date = req.query.date;
+
+        Query = `select workhrs from workingday where date between '${date}' and DATE_ADD('${date}', INTERVAL 60 DAY);`
+
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, date: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/line-allocation-linewise', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var line = req.query.line;
+
+        Query = `SELECT id, buyer, orderNo, style, color, date_format(poshipdate, '%Y-%m-%d') as poshipdate , date_format(fridate, '%Y-%m-%d') as fridate, 
+                orderpcs, planqty, line, date_format(startDate, '%Y-%m-%d') as startDate, daysrequired, date_format(endDate, '%Y-%m-%d') as endDate, 
+                seqId, oldId FROM line_allocation where line = '${line}' and orgId = ${orgId} and delStatus = 0 and Status = 1 order by seqId;`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', shipping: [] });
+                    }
+                    else {
+                        res.send({ success: true, shipping: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+// ======================================================================================================================================================
+
 module.exports = router;

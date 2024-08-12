@@ -1071,6 +1071,454 @@ router.get('/knitauth', (req, res, next) => {
     }
 });
 
+// ========================= Knit Machine List =====================================================================================
+
+router.get('/machine-allocation-entry', (req, res, next) => {
+    try {
+        var orderNo = req.query.orderNo ? req.query.orderNo : '';
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * from knit_machine_allocation_line where orgId = ${orgId} and delStatus = 0 and Status = 1 `
+
+        if (orderNo != '') {
+            Query = Query + `and orderNo =  '${orderNo}' ; `
+        }
+        if(startDate != ''){
+            Query = Query + ` and startDate >= '${startDate}'`
+        }
+
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/machine-allocation-entry-filter', (req, res, next) => {
+    try {
+        var id = req.query.id;
+        var orgId = req.decoded.orgId;
+        var knitFty = req.query.knitFty ?req.query.knitFty :'';
+        var machineDia = req.query.machineDia ? req.query.machineDia : '' ;
+
+        Query = `SELECT id, headId, style, color, size, woId, greigeKg, machineDia, fsize_id, knitFty, knitFty_id, allocated, date_format(startDate, '%Y-%m-%d') as startDate , daysrequired, date_format(endDate, '%Y-%m-%d') as endDate, orgId, status, delStatus, createdBy, createdAt, modifiedBy, modifiedAt, seqId, oldId, buyer, orderNo from knit_machine_allocation_line
+                    where orgId = ${orgId} and delStatus = 0 and Status = 1 `
+
+                    if (knitFty != '' && machineDia != '') {
+                        Query = Query + `and knitFty = '${knitFty}' and machineDia = ${machineDia} ORDER BY seqId`
+            }
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query], 
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.post('/machine-allocation-entry', async (req, res, next) => {
+    try {
+
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+
+        var data = [];
+        var headerQuery = "INSERT INTO tmp_knit_machine_allocation_line(line_id, buyer, orderNo, style, color, size, woId, greigeKg, machineDia, fsize_id, knitFty, knitFty_id, allocated, startDate, daysrequired, endDate, seqId , oldId ,createdBy, orgId) values "
+
+        var data = req.body.data;
+        var i = 0;
+        for (let datalist of data) {
+
+            var line_id = datalist.id ? datalist.id : 0;
+            var buyer = datalist.buyer ? datalist.buyer : '';
+            var orderNo = datalist.orderNo ? datalist.orderNo : '';
+            var style = datalist.style ? datalist.style : '';
+            var color = datalist.color ? datalist.color : '';
+            var size = datalist.size ? datalist.size : '';
+            var woId = datalist.woId;
+            var greigeKg = datalist.greigeKg;
+            var machineDia = datalist.machineDia;
+            var fsize_id = datalist.fsize_id;
+            var knitFty = datalist.knitFty;
+            var knitFty_id = datalist.knitFty_id;
+            var allocated = datalist.allocated;
+            var startDate = datalist.startDate;
+            var daysrequired = datalist.daysrequired;
+            var endDate = datalist.endDate;
+            var seqId = datalist.seqId;
+            var oldId = datalist.oldId;
+
+            bulkInsert =
+                `(${db.escape(line_id)},
+                ${db.escape(buyer)},
+                ${db.escape(orderNo)},
+                ${db.escape(style)},
+                ${db.escape(color)},
+                ${db.escape(size)},
+                ${db.escape(woId)},
+                ${db.escape(greigeKg)},
+                ${db.escape(machineDia)},
+                ${db.escape(fsize_id)},
+                ${db.escape(knitFty)},
+                ${db.escape(knitFty_id)},
+                ${db.escape(allocated)},
+                ${db.escape(startDate)},
+                ${db.escape(daysrequired)},
+                ${db.escape(endDate)},
+                ${db.escape(seqId)},
+                ${db.escape(oldId)},
+                ${db.escape(loginId)},
+                ${db.escape(orgId)})`;
+
+            if (i == (data.length - 1)) {
+                headerQuery = headerQuery + bulkInsert + ';'
+            } else {
+                headerQuery = headerQuery + bulkInsert + ','
+            }
+            i = i + 1;
+        }
+
+        // console.log(headerQuery)
+
+        client.executeNonQuery('ppost_knit_machine_allocation(?,?,?,?)', [id, headerQuery, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.success == false) {
+                        res.json({ success: false, message: 'something went worng' });
+                    } else {
+                        if (id == 0) {
+                            res.json({ success: true, message: 'added successfully' });
+                        } else {
+                            res.json({ success: true, message: 'updated successfully' });
+                        }
+
+                    }
+                } catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/productionDays', (req, res, next) => {
+    try {
+        var knitFty = req.query.knitFty;
+        var machineDia = req.query.machineDia;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * from knit_machine_list where orgId = ${orgId} and delStatus = 0 and Status = 1 and knitFty = '${knitFty}' and machineDia = ${machineDia}`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.put('/machine-allocation-update', async (req, res, next) => {
+    try {
+
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        var id = req.body.id ? req.body.id : 0;
+        var data = [];
+
+
+        var headerQuery = "INSERT INTO tmp_machine_allocation(lineId, headId, seqId, style, color, size, woId, greigeKg, machineDia, knitFty, allocated, startDate, daysrequired, endDate, oldId, createdBy, orgId) values "
+
+        var data = req.body.data;
+        var i = 0;
+        for (let datalist of data) {
+
+            var lineid = datalist.id ? datalist.id : 0;
+            var headId = datalist.headId;
+            var style = datalist.style ? datalist.style : '';
+            var color = datalist.color ? datalist.color : '';
+            var size = datalist.size ? datalist.size : '';
+            var woId = datalist.woId;
+            var greigeKg = datalist.greigeKg;
+            var machineDia = datalist.machineDia;
+            var knitFty = datalist.knitFty;
+            var allocated = datalist.allocated;
+            var startDate = datalist.startDate;
+            var daysrequired = datalist.daysrequired;
+            var endDate = datalist.endDate;
+            var seqId = datalist.seqId;
+            var oldId = datalist.oldId;
+
+            bulkInsert =
+              `(${db.escape(lineid)},
+                ${db.escape(headId)},
+                ${db.escape(seqId)},
+                ${db.escape(style)},
+                ${db.escape(color)},
+                ${db.escape(size)},
+                ${db.escape(woId)},
+                ${db.escape(greigeKg)},
+                ${db.escape(machineDia)},
+                ${db.escape(knitFty)},
+                ${db.escape(allocated)},
+                ${db.escape(startDate)},
+                ${db.escape(daysrequired)},
+                ${db.escape(endDate)},
+                ${db.escape(oldId)},
+                ${db.escape(loginId)},
+                ${db.escape(orgId)})`;
+
+            if (i == (data.length - 1)) {
+                headerQuery = headerQuery + bulkInsert + ';'
+            } else {
+                headerQuery = headerQuery + bulkInsert + ','
+            }
+            i = i + 1;
+        }
+
+        console.log(headerQuery)
+
+        client.executeNonQuery('pput_machine_allocation(?,?,?,?)', [id, headerQuery, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.success == false) {
+                        res.json({ success: false, message: 'something went worng' });
+                    } else {
+                        if (id == 0) {
+                            res.json({ success: true, message: 'Updated successfully' });
+                        } else {
+                            res.json({ success: true, message: 'Updated successfully' });
+                        }
+
+                    }
+                } catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/startDate', (req, res, next) => {
+    try {
+        var knitFty = req.query.knitFty;
+        var machineDia = req.query.machineDia;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT date_format(MAX(endDate), "%Y-%m-%d") endDate from knit_machine_allocation_line where orgId = ${orgId} and delStatus = 0 and Status = 1 and knitFty = '${knitFty}' and machineDia = ${machineDia}`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/machineDiatoKnitFactory', (req, res, next) => {
+    try {
+        var machineDia = req.query.machineDia;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT knitFty from knit_machine_list where orgId = ${orgId} and delStatus = 0 and Status = 1 and machineDia = ${machineDia}`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/KnitFactoryfordrag', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct knitFty from knit_machine_allocation_line where orgId = ${orgId} and delStatus = 0 and Status = 1`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/machineDiafordrag', (req, res, next) => {
+    try {
+        var knitFty = req.query.knitFty;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct machineDia from knit_machine_allocation_line where orgId = ${orgId} and delStatus = 0 and Status = 1 and knitFty = ${knitFty}`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/KnitMachineorderNoFilter', (req, res, next) => {
+    try {
+        var knitFty = req.query.knitFty;
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct orderNo from knit_machine_allocation_line where orgId = ${orgId} and delStatus = 0 and Status = 1`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
 module.exports = router;
 
 

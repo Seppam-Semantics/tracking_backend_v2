@@ -49,7 +49,7 @@ function logError(error) {
 
 
 function JWTauthorization(req, res, next) {
-    var token = req.body.token || req.param('token') || req.headers['x-access-token'];
+    var token = req.body.token || req.params.token || req.headers['x-access-token'];
     if (token) {
         const str = token;
         const arr = str.split(" ");
@@ -106,6 +106,8 @@ const mastersapi = require('./server/routes/mastersapi');
 
 const garmentsapi = require('./server/routes/garmentsapi');
 
+const eventsapi = require('./server/routes/events');
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
@@ -141,6 +143,8 @@ app.use('/dyedeliveryapi', JWTauthorization, dyedeliveryapi);
 app.use('/mastersapi', JWTauthorization, mastersapi);
 
 app.use('/garmentsapi', JWTauthorization, garmentsapi);
+
+app.use('/eventsapi', JWTauthorization, eventsapi);
 
 const port = process.env.PORT;
 app.set('port', port);

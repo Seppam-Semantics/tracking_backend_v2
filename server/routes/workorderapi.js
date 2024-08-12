@@ -100,7 +100,7 @@ router.get('/workorder/:id', (req, res, next) => {
 
 router.post('/workorder', async (req, res, next) => {
     try {
-        console.log(req.body)
+        // console.log(req.body)
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
         var data = [];
@@ -194,7 +194,7 @@ router.post('/workorder', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_workorder(?,?,?,?)', [id, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -279,7 +279,7 @@ router.get('/workorders-filter', (req, res, next) => {
         }
 
         Query = Query + ` group by buyer, orderNo, status ;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -342,7 +342,7 @@ router.get('/knitworkorderdyeworkorder-filter', (req, res, next) => {
         }
 
         Query = Query + `  group by  id , buyer, orderNo, status , fabType ;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -513,7 +513,7 @@ router.get('/order_style_BO', (req, res, next) => {
         var orgId = req.decoded.orgId;
         var buyer = req.query.buyer ? req.query.buyer : '';
         var order = req.query.order ? req.query.order : '';
-        console.log(order)
+        // console.log(order)
 
         client.executeStoredProcedure('pget_order_style_BO(?,?,?)', [order, buyer, orgId],
             req, res, next, function (result) {
@@ -543,7 +543,7 @@ router.get('/style_Color_BO', (req, res, next) => {
         var buyer = req.query.buyer ? req.query.buyer : '';
         var order = req.query.order ? req.query.order : '';
         var style = req.query.style ? req.query.style : '';
-        console.log(order)
+        // console.log(order)
 
         client.executeStoredProcedure('pget_style_color_BO(?,?,?,?)', [style, order, buyer, orgId],
             req, res, next, function (result) {
@@ -603,8 +603,8 @@ router.get('/Fsize_Gsize_BO', (req, res, next) => {
         var style = req.query.style?req.query.style:'';
         var fsize = req.query.fsize?req.query.fsize:'';
 
-        console.log(style)
-        console.log(fsize)
+        // console.log(style)
+        // console.log(fsize)
 
         Query = `SELECT distinct size FROM fsize_master WHERE orgId = ${orgId} and style = '${style}' and concatSize = '${fsize}';`
 

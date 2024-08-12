@@ -2501,5 +2501,606 @@ router.delete('/po-master-line/:id', (req, res, next) => {
 });
 // =======================================================================================================================================================================
 
+// =============================== Knit Machine List =======================================================================================
+
+router.get('/machine-list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var machineDia = req.query.machineDia;
+
+        Query = `SELECT * from knit_machine_list where orgId = ${orgId} and delStatus = 0 `
+        
+        if(machineDia != ''){
+            Query = Query + `and machineDia = ${machineDia} ;`
+        }
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/machine-list/:id', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+
+        Query = `SELECT * from knit_machine_list where orgId = ${orgId} and delStatus = 0 and id = ${id};`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.post('/machine-list', (req, res, next) => {
+    try {
+        var id = req.body.id ? req.body.id : 0;
+        var knitfty = req.body.knitFty;
+        var knitFty_id = req.body.knitFty_id;
+        var machineDia = req.body.machineDia;
+        var fsize_id = req.body.fsize_id;
+        var brand = req.body.brand;
+        var style_id = req.body.style_id;
+        var machineNos = req.body.machineNos;
+        var prodDay = req.body.prodDay;
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+
+        client.executeNonQuery('ppost_machine_list_master(?,?,?,?,?,?,?,?,?,?,?)', [id, knitfty, knitFty_id, machineDia, fsize_id, brand, style_id, machineNos, prodDay, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'added successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+// =============================== line Master =======================================================================================
+
+router.post('/line-list', (req, res, next) => {
+    try {
+        var id = req.body.id ? req.body.id : 0;
+        var line = req.body.line?req.body.line:'';
+        var lineno = req.body.lineno?req.body.lineno:'';
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+
+        client.executeNonQuery('ppost_line_master(?,?,?,?,?)', [id, line , lineno , loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'added successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/line-list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * from line where orgId = ${orgId} and delStatus = 0 ;`
+        
+        // if(machineDia != ''){
+        //     Query = Query + `and machineDia = ${machineDia} ;`
+        // }
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            line: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+
+router.get('/line/:id', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+
+        Query = `SELECT * from line where orgId = ${orgId} and delStatus = 0 and id = ${id};`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            line: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+// =============================== linemachinelist Master =======================================================================================
+
+router.post('/linemachinelist-master', (req, res, next) => {
+    try {
+
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        var id = req.body.id ? req.body.id : 0;
+        var style = req.body.style ? req.body.style : '';
+        var styleid = req.body.styleId ? req.body.styleId : '';
+        var prodhr = req.body.prodhr ? req.body.prodhr : '';
+
+        var data = [];
+        var headerQuery = "INSERT INTO tmp_linemachinelist_lines (lineid, headid, line, linemasterId, createdBy, orgId) values "
+        var data = req.body.data;
+        var i = 0;
+        for (let datalist of data) {
+            var lineid = datalist.id ? datalist.id : 0;
+            var headid = id;
+            var line = datalist.line ? datalist.line : 0;
+            var linemasterId = datalist.linemasterId;
+            bulkInsert =
+              `(${db.escape(lineid)},
+                ${db.escape(headid)},
+                ${db.escape(line)},
+                ${db.escape(linemasterId)},
+                ${db.escape(loginId)},
+                ${db.escape(orgId)})`;
+
+            if (i == (data.length - 1)) {
+                headerQuery = headerQuery + bulkInsert + ';'
+            } else {
+                headerQuery = headerQuery + bulkInsert + ','
+            }
+            i = i + 1;
+        }
+
+        console.log(headerQuery)
+
+        client.executeNonQuery('ppost_linemachinelist_master(?,?,?,?,?,?,?)', 
+            [id, style, styleid,    prodhr, headerQuery, loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.success == false) {
+                        res.json({ success: false, message: 'something went worng' });
+                    } else {
+                        if (id == 0) {
+                            res.json({ success: true, message: 'added successfully' });
+                        } else {
+                            res.json({ success: true, message: 'updated successfully' });
+                        }
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/lineName-list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * from line where orgId = ${orgId} and delStatus = 0 ;`
+        
+        // if(machineDia != ''){
+        //     Query = Query + `and machineDia = ${machineDia} ;`
+        // }
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            line: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/linemachinelist-list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT lm.*, 
+       (SELECT json_arrayagg(json_object('id', lml.id, 'line', lml.line, 'lineId', lml.linemasterid, 'hederid', lml.headid)) 
+        FROM linemachinelist_line lml 
+        WHERE lml.headid = lm.id) as line 
+        FROM linemachinelist lm
+        WHERE  lm.delStatus = 0 
+        AND lm.orgId = ${orgId} ;`
+        
+        // if(machineDia != ''){
+        //     Query = Query + `and machineDia = ${machineDia} ;`
+        // }
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            line: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/linemachinelist/:id', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+
+        Query = `SELECT lm.*, 
+       (SELECT json_arrayagg(json_object('id', lml.id, 'line', lml.line, 'lineId', lml.linemasterid, 'hederid', lml.headid)) 
+        FROM linemachinelist_line lml 
+        WHERE lml.headid = lm.id) as line 
+        FROM linemachinelist lm
+        WHERE  lm.delStatus = 0 
+        AND lm.orgId = ${orgId} and lm.id = ${id};`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            line: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+// =============================== Working Day Master =======================================================================================
+
+
+router.get('/month_list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * FROM month_master;`
+        
+        // if(machineDia != ''){
+        //     Query = Query + `and machineDia = ${machineDia} ;`
+        // }
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            month: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.post('/workingday_master', (req, res, next) => {
+    try {
+        var id = req.body.id ? req.body.id : 0;
+
+        var loginId = req.decoded.loginId;
+        var orgId = req.decoded.orgId;
+        var month = req.body.month ? req.body.month : '';
+
+
+        var headerQuery = `INSERT INTO tmp_workingday (tempid, date, day, isleave, month, remarks, workhrs, orgId, createdBy) values `
+
+
+        var data = req.body.data;
+        var i = 0;
+        for (let datalist of data) {
+            var id = datalist.id ? datalist.id : 0;
+            var date = datalist.date?datalist.date:'';
+            var day = datalist.day?datalist.day:'';
+            var isleave = datalist.isleave;
+            var month = month ;
+            var remark = datalist.Remarks?datalist.Remarks:'';
+            var workhrs = datalist.workhrs?datalist.workhrs:0;
+            bulkInsert =
+
+                `(${db.escape(id)},
+                ${db.escape(date)},
+                ${db.escape(day)},
+                ${db.escape(isleave)},
+                ${db.escape(month)},
+                ${db.escape(remark)},
+                ${db.escape(workhrs)},                
+                ${db.escape(orgId)},                                               
+                ${db.escape(loginId)})`;
+
+            if (i == (data.length - 1)) {
+                headerQuery = headerQuery + bulkInsert + ';'
+            } else {
+                headerQuery = headerQuery + bulkInsert + ','
+            }
+            i = i + 1;
+        }
+
+
+        client.executeNonQuery('ppost_workingday_master(?,?,?,?)', [id,headerQuery , loginId, orgId],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (result.affectedRows == 0) {
+                        res.json({ success: false, message: 'exsists' });
+                    } else {
+                        res.json({ success: true, message: 'added successfully' });
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/workingday_master_list', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT * from workingday where orgId = ${orgId} and delStatus = 0 ;`
+        
+        // if(machineDia != ''){
+        //     Query = Query + `and machineDia = ${machineDia} ;`
+        // }
+
+        // console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workingday: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
+router.get('/workingday_master_id/:id', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+
+        Query = `SELECT * from workingday where orgId = ${orgId} and delStatus = 0 and id = ${id};`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workingday: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+router.get('/workingday_month', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var id = req.params.id
+        var month = req.query.month?req.query.month:'';
+        var year = req.query.year?req.query.year:'';
+        Query = `select * from workingday where date_format(date , '%Y') = '${year}' and month ='${month}';`
+
+        console.log(Query);
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            workingday: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
 
 module.exports = router;

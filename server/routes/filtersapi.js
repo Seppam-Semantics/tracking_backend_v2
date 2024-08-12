@@ -309,6 +309,41 @@ router.get('/colors-sizes_data', (req, res, next) => {
 });
 
 
+router.get('/machineDia', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var style = req.query.style?req.query.style:'';
+        var size = req.query.size?req.query.size:'';
+
+        Query = `select sum(machineDia) as machineDia from fsize_master 
+                where orgId = ${orgId} and delStatus = 0 `
+
+                if(style != '' && size != ''){
+                     Query = Query + ` and style = '${style}' and concatSize = '${size}' ;`
+                }
+                
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', machineDia: [] });
+                    }
+                    else {
+                        res.send({ success: true, machineDia: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
+
 router.get('/wofty', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
@@ -983,7 +1018,7 @@ router.get('/cutting-filter', (req, res, next) => {
         
 
         // Query = Query + ` group by buyer, orderNo, status;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -1183,7 +1218,7 @@ router.get('/sewinput-filter', (req, res, next) => {
         
 
         // Query = Query + ` group by buyer, orderNo, status;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -1384,7 +1419,7 @@ router.get('/sewoutput-filter', (req, res, next) => {
         
 
         // Query = Query + ` group by buyer, orderNo, status;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -1584,7 +1619,7 @@ router.get('/packing-filter', (req, res, next) => {
         
 
         // Query = Query + ` group by buyer, orderNo, status;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -1788,7 +1823,7 @@ router.get('/shipping-filter', (req, res, next) => {
         
 
         // Query = Query + ` group by buyer, orderNo, status;`
-        console.log(Query);
+        // console.log(Query);
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, async function (result) {
                 try {
@@ -1816,5 +1851,32 @@ router.get('/shipping-filter', (req, res, next) => {
 
 //--------------------------------------Shipment  [End]-------------------------------------------
 
+
+router.get('/allmachineDia', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        Query = `SELECT distinct machineDia from fsize_master where orgId = ${orgId} and delStatus = 0 and Status = 1;`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({ success: true, data: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 module.exports = router;

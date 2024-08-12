@@ -1153,12 +1153,12 @@ from (
                     rows = result;
                     console.log(rows.RowDataPacket);
                     if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', lcNo: [] });
+                        res.json({ success: false, message: 'no records found!', workorder: [] });
                     }
                     else {
                         res.send({
                             success: true,
-                            lcNo: rows.RowDataPacket[0],
+                            LCOutstanding: rows.RowDataPacket[0],
                         })
                     }
                 }

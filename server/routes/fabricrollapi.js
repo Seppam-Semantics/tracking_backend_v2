@@ -219,7 +219,7 @@ router.post('/transcation-entry1', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_1(?,?,?,?,?,?)', [id,workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -276,7 +276,7 @@ router.post('/transcation-entry2', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_2(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -330,7 +330,7 @@ router.post('/transcation-entry3', async (req, res, next) => {
             }
             i = i + 1;
         }
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_3(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -382,7 +382,7 @@ router.post('/transcation-entry4', async (req, res, next) => {
             }
             i = i + 1;
         }
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_4(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -439,7 +439,7 @@ router.post('/transcation-entry5', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_5(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -496,7 +496,7 @@ router.post('/transcation-entry6', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_6(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -553,7 +553,7 @@ router.post('/transcation-entry7', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_transcationentry_7(?,?,?,?,?,?)', [id, workorderId, entry, headerQuery, loginId, orgId],
             req, res, next, function (result) {
@@ -796,7 +796,7 @@ router.post('/fabrictransfer', async (req, res, next) => {
             i = i + 1;
         }
 
-        console.log(headerQuery)
+        // console.log(headerQuery)
 
         client.executeNonQuery('ppost_fabrictransfer(?,?,?)', [headerQuery, loginId, orgId],
             req, res, next, function (result) {
