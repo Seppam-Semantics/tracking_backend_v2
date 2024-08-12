@@ -1758,10 +1758,11 @@ router.get('/lineallocation-statDate', (req, res, next) => {
         var orderNo = req.query.orderNo?req.query.orderNo:'';
         var style = req.query.style?req.query.style:'';
         var color = req.query.color?req.query.color:'';
+        var line = req.query.line?req.query.line:'';
 
         Query = `SELECT date_format(MAX(endDate), "%Y-%m-%d") endDate from line_allocation where orgId = 1 
                 and delStatus = 0 and Status = 1 
-                and buyer = '${buyer}' and orderNo = '${orderNo}' and style = '${style}' and color = '${color}';`
+                and buyer = '${buyer}' and orderNo = '${orderNo}' and style = '${style}' and color = '${color}' and line = '${line}';`
 
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
