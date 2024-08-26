@@ -2295,7 +2295,7 @@ router.get('/po-master-line/:id', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', po: [], pomaster : [] });
                     }
                     else {
-                        res.send({ success: true, pomaster: rows.RowDataPacket[0], po:rows.RowDataPacket[1] })
+                        res.send({ success: true, pomaster: rows.RowDataPacket[0], po:rows.RowDataPacket[1]})
                     }
                 }
                 catch (err) {
@@ -2341,11 +2341,12 @@ router.post('/po-master', (req, res, next) => {
         var buyer = req.body.buyer;
         var orderNo = req.body.orderNo;
         var poDate = req.body.poDate;
-        var shipDate = req.body.shipDate
+        var shipDate = req.body.shipDate;
+        var poStatus = req.body.poStatus;
         var loginId = req.decoded.loginId;
         var orgId = req.decoded.orgId;
 
-        client.executeNonQuery('ppost_po_master(?,?,?,?,?,?,?,?)', [id, buyerId, buyer, orderNo, poDate, shipDate, loginId, orgId],
+        client.executeNonQuery('ppost_po_master(?,?,?,?,?,?,?,?,?)', [id, buyerId, buyer, orderNo, poDate, shipDate, poStatus, loginId, orgId],
             req, res, next, function (result) {
                 try {
                     rows = result;
@@ -2454,7 +2455,7 @@ router.get('/po-master/:id', (req, res, next) => {
         var id = req.params.id;
         var orgId = req.decoded.orgId;
 
-        Query = `SELECT id, buyerId, buyer, orderNo, DATE_FORMAT(poDate , "%Y-%m-%d") as poDate , poQuantity, poValue, DATE_FORMAT(shipDate, "%Y-%m-%d") as shipDate, orgId, status, delStatus, createdBy, createdAt, modifiedBy, modifiedAt FROM po_master A WHERE A.id = ${id} and A.delStatus = 0 AND A.orgId = ${orgId};
+        Query = `SELECT id, buyerId, buyer, orderNo, DATE_FORMAT(poDate , "%Y-%m-%d") as poDate , poQuantity, poValue, DATE_FORMAT(shipDate, "%Y-%m-%d") as shipDate, po_status, orgId, status, delStatus, createdBy, createdAt, modifiedBy, modifiedAt FROM po_master A WHERE A.id = ${id} and A.delStatus = 0 AND A.orgId = ${orgId};
     `
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
@@ -2462,7 +2463,7 @@ router.get('/po-master/:id', (req, res, next) => {
                 try {
                     rows = result;
                     if (!rows.RowDataPacket) {
-                        res.json({ success: false, message: 'no records found!', rejtype: [] });
+                        res.json({ success: false, message: 'no records found!', po: [] });
                     }
                     else {
                         res.send({ success: true, po: rows.RowDataPacket[0] })
@@ -3133,6 +3134,37 @@ router.get('/workingday_month', (req, res, next) => {
     }
 });
 
+
+// ====================== Man Power =============================================================================================
+
+router.get('/man-power', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+
+        client.executeStoredProcedure('pget_orders_manpower()', [],
+            req, res, next, async function (result) {
+                try {
+                    rows = result;
+                    
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', data: [] });
+                    }
+                    else {
+                        res.send({
+                            success: true,
+                            data: rows.RowDataPacket[0],
+                        })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 
 module.exports = router;

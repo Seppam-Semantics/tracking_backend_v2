@@ -108,6 +108,9 @@ const garmentsapi = require('./server/routes/garmentsapi');
 
 const eventsapi = require('./server/routes/events');
 
+const manpowerapi = require('./server/routes/manpower');
+
+
 app.use(bodyParser.json({ limit: '500mb' }));
 app.use(bodyParser.urlencoded({
     limit: '500mb',
@@ -145,6 +148,8 @@ app.use('/mastersapi', JWTauthorization, mastersapi);
 app.use('/garmentsapi', JWTauthorization, garmentsapi);
 
 app.use('/eventsapi', JWTauthorization, eventsapi);
+
+app.use('/manpowerapi', manpowerapi);
 
 const port = process.env.PORT;
 app.set('port', port);
