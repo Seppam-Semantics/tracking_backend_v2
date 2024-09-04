@@ -114,8 +114,8 @@ router.post('/workorder', async (req, res, next) => {
             var id = datalist.id ? datalist.id : 0;
             var poid = datalist.poid;
             var polineId = datalist.polineId;
-            var buyer = Buyer;
-            var orderNo = OrderNo;
+            var buyer = Buyer ? Buyer : datalist.Buyer;
+            var orderNo = OrderNo ? OrderNo : datalist.OrderNo;
             var style = datalist.Style;
             var color = datalist.Color;
             var size = datalist.Size;
@@ -681,7 +681,7 @@ router.get('/size_id_BO', (req, res, next) => {
                         res.json({ success: false, message: 'no records found!', buyers: [] });
                     }
                     else {
-                        res.send({ success: true, sizeId: rows.RowDataPacket[0] })
+                        res.send({ success: true, sizeId: rows.RowDataPacket[0] , colorId :rows.RowDataPacket[1] })
                     }
                 }
                 catch (err) {
@@ -755,6 +755,34 @@ router.get('/fabric_type_BO', (req, res, next) => {
     }
 });
 
+router.get('/styleId', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var style = req.query.style;
+        var buyer = req.query.buyer;
+
+        Query = `select id from styles where orgId = ${orgId} and style = '${style}' and buyer = '${buyer}';`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', styleId: [] });
+                    }
+                    else {
+                        res.send({ success: true, styleId: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 router.get('/dye_Type_BO', (req, res, next) => {
     try {
@@ -923,13 +951,43 @@ router.get('/yarn_type_BO', (req, res, next) => {
 });
 
 
+router.get('/colorId', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var color = req.query.color ? req.query.color : ''
+        var buyer = req.query.buyer ? req.query.buyer : ''
+
+        Query = `select id from colors 
+        WHERE color = '${color}' and delStatus = 0 and status = 1 and buyer = '${buyer}';`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', Colorlosses: [] });
+                    }
+                    else {
+                        res.send({ success: true, Colorlosses: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
+
 router.get('/RejTypeLoss_BO', (req, res, next) => {
     try {
         var orgId = req.decoded.orgId;
         var colorid = req.query.color ? req.query.color : ''
 
         Query = `select round(sum(losses),2) as losses from rej_type_master_line rtml left join rej_type_master rtm on rtm.id = rtml.rejTypeId 
-        WHERE rtml.colorId = ${colorid} and rtm.delStatus = 0 and rtm.status = 1;`
+        WHERE rtml.colorId = '${colorid}' and rtm.delStatus = 0 and rtm.status = 1;`
 
         client.executeStoredProcedure('pquery_execution(?)', [Query],
             req, res, next, function (result) {
@@ -1021,6 +1079,35 @@ router.get('/ColorLoss_BO', (req, res, next) => {
     }
 });
 
+router.get('/ColorLosses_BO', (req, res, next) => {
+    try {
+        var orgId = req.decoded.orgId;
+        var color = req.query.color;
+        var buyer = req.query.buyer;
+
+
+        Query = `select dye_process_loss from colors where color = '${color}' and buyer = '${buyer}';`
+
+        client.executeStoredProcedure('pquery_execution(?)', [Query],
+            req, res, next, function (result) {
+                try {
+                    rows = result;
+                    if (!rows.RowDataPacket) {
+                        res.json({ success: false, message: 'no records found!', DyeProcessLoss: [] });
+                    }
+                    else {
+                        res.send({ success: true, DyeProcessLoss: rows.RowDataPacket[0] })
+                    }
+                }
+                catch (err) {
+                    next(err)
+                }
+            });
+    }
+    catch (err) {
+        next(err)
+    }
+});
 
 router.get('/DyeTypeMaster_BO', (req, res, next) => {
     try {
@@ -1111,10 +1198,5 @@ router.post('/fab-booking', (req, res, next) => {
 
 
 module.exports = router;
-
-
-
-
-
 
 
